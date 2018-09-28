@@ -55,13 +55,10 @@ def move(boy):
         dx = x - boy.x
         if dx == 0:
             dx += 0.000001
-        grad = dy / dx          #기울기
-        if dx >= 0:         #마우스가 캐릭터보다 오른쪽에 있으면(1,4사분면)
-            boy.x+=boy.speed * math.cos(math.atan(grad))
-            boy.y+=boy.speed * math.sin(math.atan(grad))
-        else:               #2,3 사분면의 경우
-            boy.x-=boy.speed * math.cos(math.atan(grad))
-            boy.y-=boy.speed * math.sin(math.atan(grad))
+            
+        arctan=math.atan2(dy, dx)
+        boy.x+=boy.speed * math.cos(arctan)
+        boy.y+=boy.speed * math.sin(arctan)
 
         if dx >= -1 and dx <= 1 and dy >= -1 and dy <= 1 and len(waypoints) > 0:
             del waypoints[0]
