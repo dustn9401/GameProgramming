@@ -20,9 +20,10 @@ def handle_events():
 
 def enter():
     global credit
-    open_canvas()
-
     credit = Credit()
+
+def exit():
+    del credit
 
 def pause():
     pass
@@ -51,9 +52,6 @@ def update():
     pass
 
 # fill here
-
-def exit():
-    close_canvas()
 
 if __name__ == '__main__':
     main()

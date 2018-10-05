@@ -51,7 +51,7 @@ def update():
 # fill here
 
 def exit():
-    close_canvas()
+    pass
 
 if __name__ == '__main__':
     main()
