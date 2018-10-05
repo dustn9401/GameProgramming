@@ -24,6 +24,9 @@ def enter():
     global title
     title = Title()
 
+def exit():
+    del title
+
 def pause():
     pass
 def resume():
@@ -50,8 +53,6 @@ def update():
 
 # fill here
 
-def exit():
-    pass
 
 if __name__ == '__main__':
     main()

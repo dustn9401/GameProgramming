@@ -1,7 +1,7 @@
 from pico2d import *
 import game_framework
 import random
-
+BOYS_NUM=1000
 class Grass:
     def __init__(self):
         self.image = load_image('../res/grass.png')
@@ -10,6 +10,7 @@ class Grass:
         self.image.draw(400, 30)
 
 class Boy:
+    image = None
     def __init__(self):
         print("Creating..")
         self.x = random.randint(0, 200)
@@ -17,12 +18,13 @@ class Boy:
         self.speed = random.uniform(1.0, 3.0)
         self.frame = random.randint(0, 7)
         self.waypoints = []
-        self.image = load_image('../res/animation_sheet.png')
-        self.wp = load_image('../res/hand_arrow.png')
+        if Boy.image == None:
+            Boy.image = load_image('../res/animation_sheet.png')
+            Boy.wp = load_image('../res/hand_arrow.png')
     def draw(self):
         for wp in self.waypoints:
-            self.wp.draw(wp[0], wp[1])
-        self.image.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
+            Boy.wp.draw(wp[0], wp[1])
+        Boy.image.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
     def update(self):
         self.frame = (self.frame + 1) % 8
         if len(self.waypoints) > 0:
@@ -70,9 +72,11 @@ def enter():
     global boys, grass
     #open_canvas()
 
-    boys = [ Boy() for i in range(10) ]
+    boys = [ Boy() for i in range(BOYS_NUM) ]
     grass = Grass()
 
+def exit():
+    del boys, grass
 
 # def main():
 #     global running
@@ -102,9 +106,6 @@ def update():
 def pause():
     pass
 def resume():
-    pass
-
-def exit():
     pass
 
 if __name__ == '__main__':
