@@ -18,18 +18,20 @@ class Boy:
         self.speed = random.uniform(1.0, 3.0)
         self.frame = random.randint(0, 7)
         self.waypoints = []
+        self.state = random.randint(2,3)
         if Boy.image == None:
             Boy.image = load_image('../res/animation_sheet.png')
             Boy.wp = load_image('../res/hand_arrow.png')
     def draw(self):
         for wp in self.waypoints:
             Boy.wp.draw(wp[0], wp[1])
-        Boy.image.clip_draw(self.frame * 100, 0, 100, 100, self.x, self.y)
+        Boy.image.clip_draw(self.frame * 100, self.state * 100, 100, 100, self.x, self.y)
     def update(self):
         self.frame = (self.frame + 1) % 8
         if len(self.waypoints) > 0:
             tx, ty = self.waypoints[0]
             dx, dy = tx - self.x, ty - self.y
+            self.state = 0 if dx < 0 else 1
             dist = math.sqrt(dx ** 2 + dy ** 2)
             if dist > 0:
                 self.x += self.speed * dx / dist
@@ -42,6 +44,9 @@ class Boy:
 
                 if (tx, ty) == (self.x, self.y):
                     del self.waypoints[0]
+        else:
+            if self.state == 0: self.state = 2
+            if self.state == 1: self.state = 3
 
 span = 50
 def handle_events():
