@@ -5,11 +5,16 @@ import random
 class Road:
     def __init__(self):
         self.x = 400
-        self.y = 400
+        self.y = 300
         self.image = load_image('res/road.png')
         print(self.image)
     def draw(self):
         self.image.draw(self.x, self.y)
+    def update(self):
+        global car
+        self.y -= car.speed
+        if self.y > 500 or self.y < 100:
+            self.y = 300
 
 class Car:
     image = None
@@ -32,13 +37,13 @@ def handle_events():
             if e.key == SDLK_ESCAPE:
                 game_framework.pop_state()
             elif e.key == SDLK_LEFT:
-                car.x-=5
+                car.x-=1
             elif e.key == SDLK_RIGHT:
-                car.x+=5
+                car.x+=1
             elif e.key == SDLK_DOWN:
-                road.y-=car.speed
+                car.speed-=1
             elif e.key == SDLK_UP:
-                road.y+=car.speed
+                car.speed+=1
 
 def enter():
     global car, road
@@ -57,7 +62,8 @@ def draw():
     update_canvas()
 
 def update():
-    pass
+    global road
+    road.update()
 def pause():
     pass
 def resume():
