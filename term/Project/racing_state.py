@@ -22,10 +22,15 @@ class Car:
         self.x = random.randint(0, 200)
         self.y = random.randint(90, 550)
         self.speed = random.uniform(1.0, 3.0)
+        self.accel = 0
+        self.dir = 0
         if Car.image == None:
             Car.image = load_image('res/car.png')
     def draw(self):
         Car.image.clip_draw(50, 50, 50, 50, self.x, self.y)
+    def update(self):
+        self.x += 2 * self.dir
+        self.speed += self.accel
 
 def handle_events():
     global car, road
@@ -37,14 +42,23 @@ def handle_events():
             if e.key == SDLK_ESCAPE:
                 game_framework.pop_state()
             elif e.key == SDLK_LEFT:
-                car.x-=1
+                car.dir -= 1
             elif e.key == SDLK_RIGHT:
-                car.x+=1
+                car.dir += 1
             elif e.key == SDLK_DOWN:
-                car.speed-=1
+                car.accel -= 0.03
             elif e.key == SDLK_UP:
-                car.speed+=1
-
+                car.accel += 0.03
+        elif e.type == SDL_KEYUP:
+            if e.key == SDLK_LEFT:
+                car.dir += 1
+            elif e.key == SDLK_RIGHT:
+                car.dir -= 1
+            elif e.key == SDLK_UP:
+                car.accel -= 0.03
+            elif e.key == SDLK_DOWN:
+                car.accel += 0.03
+                
 def enter():
     global car, road
     car = Car()
@@ -62,8 +76,9 @@ def draw():
     update_canvas()
 
 def update():
-    global road
+    global road, car
     road.update()
+    car.update()
 def pause():
     pass
 def resume():

@@ -24,6 +24,7 @@ def enter():
     title = Title()
 
 def exit():
+    global title
     del title
 
 def pause():
