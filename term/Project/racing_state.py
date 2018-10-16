@@ -1,7 +1,11 @@
 from pico2d import *
 import game_framework
 import random
+import json
 
+#data = {'mycar': {'x' : 200, 'y' : 100, 'StartState' : 'RIGHT_RUN'}}
+#data_string = '{"mycar": {"x" : 200, "y" : 100, "StartState" : "RIGHT_RUN"}}'
+#json.loads(data_string)
 class Road:
     def __init__(self):
         self.x = 400
@@ -19,8 +23,8 @@ class Road:
 class Car:
     image = None
     def __init__(self):
-        self.x = random.randint(0, 200)
-        self.y = random.randint(90, 550)
+        self.x = 400
+        self.y = 90
         self.speed = random.uniform(1.0, 3.0)
         self.accel = 0
         self.dir = 0
