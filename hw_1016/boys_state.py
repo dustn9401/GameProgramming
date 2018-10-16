@@ -116,15 +116,17 @@ def exit():
     global boys, grass
     del boys, grass
 
-# def main():
-#     global running
-#     enter()
-#     while running:
-#         handle_events()
-#         print(running)
-#         update()
-#         draw()
-#     exit()
+def main():
+    open_canvas()
+    global running
+    enter()
+    running = True
+    while running:
+        handle_events()
+        update()
+        draw()
+    exit()
+    close_canvas()
 
 def draw():
     global grass, boys
