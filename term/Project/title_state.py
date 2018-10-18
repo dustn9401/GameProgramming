@@ -12,7 +12,7 @@ class ButtonStart:
         self.image = load_image('res/gamestart.png')
         print(self.image)
     def draw(self):
-        self.image.draw(400,200)
+        self.image.draw(400,100)
 def handle_events():
     events = get_events()
     for e in events:
@@ -25,7 +25,7 @@ def handle_events():
                 game_framework.push_state(garage_state)
         elif e.type == SDL_MOUSEBUTTONDOWN:
             if e.button == SDL_BUTTON_LEFT:
-                if e.x > 342 and e.x < 491 and e.y > 430 and e.y < 494:
+                if e.x > 235 and e.x < 564 and e.y > 429 and e.y < 570:
                     game_framework.push_state(garage_state)
                 print('%d, %d'%(e.x, e.y))
 

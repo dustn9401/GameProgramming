@@ -27,7 +27,7 @@ class Car:
         if Car.image == None:
             Car.image = load_image('res/car.png')
     def draw(self):
-        Car.image.clip_draw(50, 50, 50, 50, self.x, self.y)
+        Car.image.clip_draw(0, 0, 30, 50, self.x, self.y)
     def update(self):
         self.x += 2 * self.dir
         self.speed += self.accel

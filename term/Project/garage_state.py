@@ -8,7 +8,7 @@ class Garage:
         print(self.image)
     def draw(self):
         self.image.draw(400,300)
-
+        
 def handle_events():
     events = pico2d.get_events()
     for e in events:
