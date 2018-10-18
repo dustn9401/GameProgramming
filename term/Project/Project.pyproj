@@ -21,6 +21,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="garage_state.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="racing_state.py" />
     <Compile Include="game_framework.py" />
     <Compile Include="logo_state.py" />

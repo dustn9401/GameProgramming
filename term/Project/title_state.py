@@ -1,13 +1,18 @@
 from pico2d import *
 import game_framework
-import racing_state
+import garage_state
 class Title:
     def __init__(self):
         self.image = load_image('res/title.png')
         print(self.image)
     def draw(self):
         self.image.draw(400,300)
-
+class ButtonStart:
+    def __init__(self):
+        self.image = load_image('res/gamestart.png')
+        print(self.image)
+    def draw(self):
+        self.image.draw(400,200)
 def handle_events():
     events = get_events()
     for e in events:
@@ -17,15 +22,21 @@ def handle_events():
             if e.key == SDLK_ESCAPE:
                 game_framework.quit()
             if e.key == SDLK_SPACE:
-                game_framework.push_state(racing_state)
+                game_framework.push_state(garage_state)
+        elif e.type == SDL_MOUSEBUTTONDOWN:
+            if e.button == SDL_BUTTON_LEFT:
+                if e.x > 342 and e.x < 491 and e.y > 430 and e.y < 494:
+                    game_framework.push_state(garage_state)
+                print('%d, %d'%(e.x, e.y))
 
 def enter():
-    global title
+    global title, start
     title = Title()
+    start = ButtonStart()
 
 def exit():
-    global title
-    del title
+    global title, start
+    del title, start
 
 def pause():
     pass
@@ -43,9 +54,10 @@ def main():
     exit()
 
 def draw():
-    global title
+    global title, start
     clear_canvas()
     title.draw()
+    start.draw()
     update_canvas()
 
 def update():
