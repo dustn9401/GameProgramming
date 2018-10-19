@@ -11,29 +11,45 @@ class Road:
     def draw(self):
         self.image.draw(self.x, self.y)
     def update(self):
-        global car
-        self.y -= car.speed
+        global mycar
+        self.y -= mycar.speed
         if self.y > 500 or self.y < 100:
             self.y = 300
 
 class Car:
     image = None
-    def __init__(self):
-        self.x = 400
-        self.y = 90
+    def __init__(self, level):
+        self.x = random.randint(200,600)
+        self.y = random.randint(0,600)
         self.speed = random.uniform(1.0, 3.0)
         self.accel = 0
         self.dir = 0
-        if Car.image == None:
-            Car.image = load_image('res/car.png')
+        self.level = level
     def draw(self):
-        Car.image.clip_draw(0, 0, 30, 50, self.x, self.y)
+        self.image.clip_draw(0, 0, 30, 50, self.x, self.y)
     def update(self):
+        global mycar
         self.x += 2 * self.dir
-        self.speed += self.accel
+        self.y -= (mycar.speed - self.speed)        #내 차와의 상대속도만큼 y위치 변경
+        self.speed += self.accel                    #속도 += 가속도
+        if self.y < -100: self.y = 900
+        if self.y > 900: self.y = -100
+
+class Car_lev1(Car):
+    def __init__(self):
+        super().__init__(1)
+        if Car_lev1.image == None:
+            Car_lev1.image = pico2d.load_image('res/car_lev1.png')
+
+class Car_lev2(Car):
+    image = None
+    def __init__(self):
+        super().__init__(2)
+        if Car_lev2.image == None:
+            Car_lev2.image = pico2d.load_image('res/car_lev2.png')
 
 def handle_events():
-    global car, road
+    global mycar, road
     events = get_events()
     for e in events:
         if e.type == SDL_QUIT:
@@ -42,43 +58,52 @@ def handle_events():
             if e.key == SDLK_ESCAPE:
                 game_framework.pop_state()
             elif e.key == SDLK_LEFT:
-                car.dir -= 1
+                mycar.dir -= 1
             elif e.key == SDLK_RIGHT:
-                car.dir += 1
+                mycar.dir += 1
             elif e.key == SDLK_DOWN:
-                car.accel -= 0.03
+                mycar.accel -= 0.03
             elif e.key == SDLK_UP:
-                car.accel += 0.03
+                mycar.accel += 0.03
         elif e.type == SDL_KEYUP:
             if e.key == SDLK_LEFT:
-                car.dir += 1
+                mycar.dir += 1
             elif e.key == SDLK_RIGHT:
-                car.dir -= 1
+                mycar.dir -= 1
             elif e.key == SDLK_UP:
-                car.accel -= 0.03
+                mycar.accel -= 0.03
             elif e.key == SDLK_DOWN:
-                car.accel += 0.03
+                mycar.accel += 0.03
                 
 def enter():
-    global car, road
-    car = Car()
+    global mycar, cars, road
+    mycar = Car_lev1()
+    mycar.x, mycar.y = 400,300
+    cars = []
+    for i in range(10):
+        cars.append(Car_lev1())
+        cars.append(Car_lev2())
     road = Road()
 
 def exit():
-    global road, car
-    del car, road
+    global road, mycar, cars
+    del mycar, road, cars
 
 def draw():
-    global road, car
+    global road, mycar, cars
     clear_canvas()
     road.draw()
-    car.draw()
+    mycar.draw()
+    for c in cars:
+        c.draw()
     update_canvas()
 
 def update():
-    global road, car
+    global road, mycar, cars
     road.update()
-    car.update()
+    mycar.update()
+    for c in cars:
+        c.update()
 def pause():
     pass
 def resume():

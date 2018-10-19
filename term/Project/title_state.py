@@ -27,7 +27,6 @@ def handle_events():
             if e.button == SDL_BUTTON_LEFT:
                 if e.x > 235 and e.x < 564 and e.y > 429 and e.y < 570:
                     game_framework.push_state(garage_state)
-                print('%d, %d'%(e.x, e.y))
 
 def enter():
     global title, start

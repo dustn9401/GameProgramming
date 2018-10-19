@@ -8,7 +8,8 @@ class Garage:
         print(self.image)
     def draw(self):
         self.image.draw(400,300)
-        
+
+
 def handle_events():
     events = pico2d.get_events()
     for e in events:
@@ -21,8 +22,6 @@ def handle_events():
                 game_framework.push_state(racing_state)
         elif e.type == pico2d.SDL_MOUSEBUTTONDOWN:
             if e.button == pico2d.SDL_BUTTON_LEFT:
-                print('%d, %d'%(e.x, e.y))
-                
                 if e.x > 442 and e.x < 741 and e.y > 503 and e.y < 587:
                     game_framework.push_state(racing_state)
                     
