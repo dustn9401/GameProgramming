@@ -26,16 +26,15 @@ while running:
     pico2d.clear_canvas()
     grass.draw(400, 30)
 
-    if mouse_x != x and abs(mouse_y - y) > speed:
+    if mouse_x != x or mouse_y != y:
         dy=mouse_y-y        #캐릭터를 원점으로 생각하여 현재 마우스 좌표에 대한 상대적인 위치 차이를 구함
         dx=mouse_x-x
+        if dx == 0: dx = 0.000001
         grad=dy/dx          #기울기
-        if dx >= 0:         #마우스가 캐릭터보다 오른쪽에 있으면(1,4사분면)
-            x+=speed*math.cos(math.atan(grad))
-            y+=speed*math.sin(math.atan(grad))
-        else:               #2,3 사분면의 경우
-            x-=speed*math.cos(math.atan(grad))
-            y-=speed*math.sin(math.atan(grad))
+        
+        arctan=math.atan2(dy, dx)
+        boy.x+=boy.speed * math.cos(arctan)
+        boy.y+=boy.speed * math.sin(arctan)
             
     character.clip_draw(frame * 100, 100, 100, 100, x, 600-y)
     pico2d.update_canvas()

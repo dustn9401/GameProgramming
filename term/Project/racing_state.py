@@ -29,12 +29,11 @@ class Car:
         self.image.clip_draw(0, 0, 30, 50, self.x, self.y)
     def update(self):
         global mycar
-        self.x += 2 * self.dir
+        self.x = clamp(100, self.x + 2 * self.dir, 700)     #x좌표 최소100, 최대700
         self.y -= (mycar.speed - self.speed)        #내 차와의 상대속도만큼 y위치 변경
         self.speed += self.accel                    #속도 += 가속도
         if self.y < -100: self.y = 900
         if self.y > 900: self.y = -100
-
 class Car_lev1(Car):
     def __init__(self):
         super().__init__(1)
@@ -42,7 +41,6 @@ class Car_lev1(Car):
             Car_lev1.image = pico2d.load_image('res/car_lev1.png')
 
 class Car_lev2(Car):
-    image = None
     def __init__(self):
         super().__init__(2)
         if Car_lev2.image == None:
