@@ -3,6 +3,7 @@ import game_framework
 import random
 WIDTH, HEIGHT = 800, 600
 MAX_LEV = 3
+LEFT, RIGHT, UP, STOP = range(4)
 class Road:
     def __init__(self):
         self.x = WIDTH//2
@@ -18,7 +19,7 @@ class Road:
             self.y = 300
 
 class Car:
-    image = [None]*MAX_LEV
+    image = [[] for i in range(MAX_LEV)]
     def __init__(self, level):
         self.x = random.randint(0 + 200, WIDTH - 200)
         self.y = random.randint(0, HEIGHT)
@@ -26,17 +27,32 @@ class Car:
         self.accel = 0
         self.dir = 0
         self.level = level
-        if Car.image[level] == None:
-            Car.image[level] = pico2d.load_image('res/car_lev%d.png'%(level))
+        self.state = STOP
+        if len(Car.image[self.level]) == 0:
+            Car.image[self.level].append(pico2d.load_image('res/car_lev%d_l.png'%(self.level)))
+            Car.image[self.level].append(pico2d.load_image('res/car_lev%d_r.png'%(self.level)))
+            Car.image[self.level].append(pico2d.load_image('res/car_lev%d_u.png'%(self.level)))
+            Car.image[self.level].append(pico2d.load_image('res/car_lev%d_s.png'%(self.level)))
     def draw(self):
-        self.image[self.level].clip_draw(0, 0, 30, 50, self.x, self.y)
+        self.image[self.level][self.state].draw(self.x, self.y)
     def update(self):
         global player
-        self.x = pico2d.clamp(0 + 100, self.x + 2 * self.dir, WIDTH - 100)     #x좌표 최소100, 최대700
+        self.x = pico2d.clamp(0 + 100, self.x + (self.dir/2), WIDTH - 100)     #x좌표 최소100, 최대700
         self.y -= (player.car.speed - self.speed)        #내 차와의 상대속도만큼 y위치 변경
         self.speed += self.accel                    #속도 += 가속도
         if self.y < -100: self.y = 900
         if self.y > 900: self.y = -100
+
+        # ============= 차량 움직임 상태 ==============
+
+        if self.speed == 0:
+            self.state = STOP
+        elif self.dir == 1:
+            self.state = RIGHT
+        elif self.dir == -1:
+            self.state = LEFT
+        else:
+            self.state = UP
 
 class Player:
     def __init__(self, level):
@@ -57,28 +73,29 @@ def handle_events():
             elif e.key == pico2d.SDLK_RIGHT:
                 player.car.dir += 1
             elif e.key == pico2d.SDLK_DOWN:
-                player.car.accel -= 0.03
+                player.car.accel -= 0.01
             elif e.key == pico2d.SDLK_UP:
-                player.car.accel += 0.03
+                player.car.accel += 0.01
         elif e.type == pico2d.SDL_KEYUP:
             if e.key == pico2d.SDLK_LEFT:
                 player.car.dir += 1
             elif e.key == pico2d.SDLK_RIGHT:
                 player.car.dir -= 1
             elif e.key == pico2d.SDLK_UP:
-                player.car.accel -= 0.03
+                player.car.accel -= 0.01
             elif e.key == pico2d.SDLK_DOWN:
-                player.car.accel += 0.03
-
-
+                player.car.accel += 0.01
                 
+def collision_check():
+    global player, cars
+
 def enter():
     global player, cars, road
     player = Player(1)
     player.car.x, player.car.y = 400,200
     cars = []
     for i in range(10):
-        cars.append(Car(random.randrange(1,MAX_LEV)))
+        cars.append(Car(random.randrange(1,2)))
     road = Road()
 
 def exit():
