@@ -1,5 +1,4 @@
 import game_framework
-import racing_state
 import logo_state
 import pico2d
 
