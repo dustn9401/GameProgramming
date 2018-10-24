@@ -26,7 +26,7 @@ class BaseObject:
 class Tree(BaseObject):
     image = None
     def __init__(self):
-        self.x = random.randint(0,180) if random.randint(0,1) else random.randint(WIDTH-180, WIDTH)
+        self.x = random.randint(0,150) if random.randint(0,1) else random.randint(WIDTH-150, WIDTH)
         self.y = random.randint(0, HEIGHT)
         if Tree.image == None:
             Tree.image = pico2d.load_image('res/tree.png')
@@ -54,13 +54,14 @@ class Road(BaseObject):
 class Car(BaseObject):
     image = None
     def __init__(self, level):
-        self.x = random.randint(0 + 200, WIDTH - 200)
+        self.x = random.randint(0 + 150, WIDTH - 150)
         self.y = random.randint(0, HEIGHT)
         self.accel = 0
         self.dir = 0
         self.level = level
         self.speed = random.uniform(1.0, MAX_SPEEDS[self.level])
         self.state = STOP
+        self.counter = 0
         if Car.image == None:
             Car.image = pico2d.load_image('res/car.png')
     def draw(self):
@@ -74,7 +75,7 @@ class Car(BaseObject):
         if self.state == DEAD:
             self.reset()
         # ============= 좌표 업데이트 ==============
-        self.x = pico2d.clamp(0 + 100, self.x + 2*self.dir, WIDTH - 100)     #x좌표 최소100, 최대700
+        self.x = pico2d.clamp(0 + 150, self.x + 2*self.dir, WIDTH - 150)     #x좌표 최소100, 최대700
         self.y -= (player.car.speed - self.speed)        #내 차와의 상대속도만큼 y위치 변경
         self.speed = pico2d.clamp(-MAX_SPEEDS[self.level], self.speed + self.accel, MAX_SPEEDS[self.level])      #속도 += 가속도
         if self.y < -100 or self.y > 900:
@@ -88,7 +89,8 @@ class Car(BaseObject):
         elif self.dir == -1:
             self.state = LEFT
         else:
-            self.state = UP
+            self.state = UP    
+        self.counter = (self.counter + 1)%100
     def reset(self):
         self. x = random.randint(200, WIDTH - 200)
         self. y = 0-100 if random.randint(0,1) else HEIGHT+100
@@ -227,6 +229,8 @@ def update():
     player.car.update()     #플레이어 차 업테이트
     for c in cars:
         c.update()          #상대 차들 업데이트
+        if c.counter == 0:
+            c.dir = random.randint(-1, 1)
     
     i, l = 0, len(fires)
     while i < l:         #폭발 업데이트
