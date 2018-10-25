@@ -2,6 +2,7 @@ import pico2d
 import game_framework
 import random
 import math
+import json
 WIDTH, HEIGHT = 800, 600    #window size
 MAX_LEV = 6     #max level
 MAX_SPEEDS = [i*10 for i in range(MAX_LEV)]
@@ -173,11 +174,20 @@ class Coin(BaseObject):
         self.x += self.speed*math.cos(arctan)
         self.y += self.speed*math.sin(arctan)
         
-class Player:
-    def __init__(self, level):
-        self.coin = 0
-        self.car = Car(level)
-    
+class Player(BaseObject):
+    def __init__(self):
+        global player_data
+        self.coin = player_data['player']['coin']
+        self.level = player_data['player']['level']
+        self.car = Car(self.level)
+    def draw(self):
+        self.car.draw()
+    def update(self):
+        global player_data
+        self.car.update()
+        player_data['player']['coin'] = self.coin
+        player_data['player']['level'] = self.level
+        
 def handle_events():
     global road, player
     events = pico2d.get_events()
@@ -221,14 +231,21 @@ def collision_check():
             for i in range(c.level):    #터트린 차량의 레벨에 비례한 코인 생성
                 coins.append(Coin(c.x + random.randint(-20, 20), c.y + random.randint(-20, 20))) 
             player.coin += c.level
-            
-            
+def load_data():
+    global player_data
+    with open('res/player_data.json', 'r') as fp:
+        player_data = json.load(fp)
+def save_data():
+    global player_data
+    with open('res/player_data.json', 'w') as fp:
+        json.dump(player_data, fp)
 def enter():
-    global player, cars, road, coins, info, fires, trees
+    global player, cars, road, coins, info, fires, trees, player_data
+    load_data()    
     fires = []
     info = Info()
     coins = []
-    player = Player(5)
+    player = Player()
     player.car.x, player.car.y = 400,200
     cars = []
     trees = []
@@ -240,6 +257,7 @@ def enter():
 
 def exit():
     global road, player, cars, coins, fires, trees, info
+    save_data()
     del player, road, cars, coins, fires, trees, info
 
 def draw():
@@ -254,7 +272,7 @@ def draw():
         c.draw()
     for f in fires:
         f.draw()
-    player.car.draw()
+    player.draw()
     info.draw()
     pico2d.update_canvas()
     pico2d.delay(DELAY)
@@ -263,7 +281,7 @@ def update():
     global road, player, cars, coins, fires, info
     road.update()   #도로 업데이트
     collision_check()       #충돌체크
-    player.car.update()     #플레이어 차 업테이트
+    player.update()     #플레이어 차 업테이트
     for c in cars:
         c.update()          #상대 차들 업데이트
         if c.counter == 0:
