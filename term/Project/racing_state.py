@@ -3,58 +3,50 @@ import game_framework
 import random
 import math
 import json
+import base
 WIDTH, HEIGHT = 800, 600    #window size
 MAX_LEV = 6     #max level
 MAX_SPEEDS = [i*10 for i in range(MAX_LEV)]
 MAX_INT_LENGTH = 10
 
 LEFT, RIGHT, UP, STOP, DEAD = range(5)    #car state
-LOAD_W,LOAD_H = 800, 1534
-COIN_W, COIN_H = 50, 50
-COIN_FRAME_SIZE = 10
-CAR_W, CAR_H = 45, 62
-NUM_W, NUM_H = 44, 58
-EXPLOSION_W, EXPLOSION_H = 128, 128
-EXPLOSION_FRAME_SIZE = 16
 NUM_CAR = 20
 NUM_TREE = 100
 ROAD_L, ROAD_R = 100, 700
 DELAY=0.02      #draw 시 delay함수 호출, accel, dir 변수 함께 조정
 
-class BaseObject:
-    def __init__(self):
-        print('do not create')
-    def draw(self):
-        raise NotImplementedError()
-    def update(self):
-        raise NotImplementedError()
-
 # =============== 코인, 속도, 숫자 표시 관련 =====================
-class Number:
+class Number(base.BaseObject):
     image = None
+    WIDTH, HEIGHT = 44, 58
     def __init__(self, x, y):
         self.x, self.y = x, y
         if Number.image == None:
             Number.image = pico2d.load_image('res/numbers.png')
             print('Number', self.image)
     def draw(self, num):
-        Number.image.clip_draw(num*NUM_W, 0, NUM_W, NUM_H, self.x, self.y)
-class Numbers(BaseObject):
+        Number.image.clip_draw(num*self.WIDTH, 0, self.WIDTH, self.HEIGHT, self.x, self.y)
+    def update(self):
+        pass
+class Numbers(base.BaseObject):
     def __init__(self, x, y):
         self.x, self.y = x, y
         self.num = 0
-        self.numbers = [Number(self.x + i*(NUM_W), self.y) for i in range(MAX_INT_LENGTH)]
+        self.numbers = [Number(self.x + i*Number.WIDTH, self.y) for i in range(MAX_INT_LENGTH)]
+        self.WIDTH = 44 * len(str(self.num))
+        self.HEIGHT = 58
     def draw(self):
         string = str(self.num)
         for i in range(len(string)):
             self.numbers[i].draw(int(string[i]))
     def update(self):        
-        pass
-class Info(BaseObject):
+        for n in self.numbers: n.update()
+class Info(base.BaseObject):
+    WIDTH, HEIGHT = 100, 100
     def __init__(self):
         self.x, self.y = 600, 500
         self.coin = Coin(self.x, self.y)
-        self.coin_numbers = Numbers(self.x + COIN_W, self.y)
+        self.coin_numbers = Numbers(self.x + Coin.WIDTH, self.y)
     def draw(self):
         self.coin.draw()
         self.coin_numbers.draw()
@@ -65,7 +57,7 @@ class Info(BaseObject):
         self.coin.x, self.coin.y = self.x, self.y
         
 #======================= 나무, 도로, 차 그리기 ======================
-class Tree(BaseObject):
+class Tree(base.BaseObject):
     image = None
     def __init__(self):
         self.x = random.randint(0,ROAD_L) if random.randint(0,1) else random.randint(ROAD_R, WIDTH)
@@ -79,7 +71,8 @@ class Tree(BaseObject):
         global player
         self.y -= player.car.speed
         if self.y < 0: self.y = HEIGHT+200
-class Road(BaseObject):
+class Road(base.BaseObject):
+    WIDTH, HEIGHT = 800, 1534
     def __init__(self):
         self.x = WIDTH//2
         self.y = HEIGHT//2
@@ -93,8 +86,9 @@ class Road(BaseObject):
         if self.y > 500 or self.y < 100:
             self.y = 300
 
-class Car(BaseObject):
+class Car(base.BaseObject):
     image = None
+    WIDTH, HEIGHT = 48, 62
     def __init__(self, level):
         self.x = random.randint(ROAD_L + 100, ROAD_R - 100)
         self.y = random.randint(0, HEIGHT)
@@ -108,10 +102,8 @@ class Car(BaseObject):
             Car.image = pico2d.load_image('res/car.png')
             print('Car', Car.image)
     def draw(self):
-        Car.image.clip_draw(self.state*CAR_W, (self.level-1)*CAR_H, CAR_W, CAR_H, self.x, self.y)
-        
-        rt = getRect(self)
-        pico2d.draw_rectangle(rt[0][0], rt[0][1], rt[1][0], rt[1][1])
+        Car.image.clip_draw(self.state*self.WIDTH, (self.level-1)*self.HEIGHT, self.WIDTH, self.HEIGHT, self.x, self.y)
+        self.drawRect()
         #clip_composite_draw(self.frame*100, 300, 100, 100, math.pi/2, '', self.x, self.y, 100, 100)
     def update(self):
         global player
@@ -139,8 +131,10 @@ class Car(BaseObject):
         self. y = 0-100 if random.randint(0,1) else HEIGHT+100
         self.speed = random.uniform(1.0, MAX_SPEEDS[self.level])
         
-class Explosion(BaseObject):
+class Explosion(base.BaseObject):
     image = None
+    WIDTH, HEIGHT = 128, 128
+    FRAME_SIZE = 16
     def __init__(self, x, y):
         self.x, self.y = x, y
         self.frame = 0
@@ -148,14 +142,16 @@ class Explosion(BaseObject):
             Explosion.image = pico2d.load_image('res/Explosion.png')
             print('Explosion', Explosion.image)
     def draw(self):
-        Explosion.image.clip_draw((self.frame%4)*EXPLOSION_W, (self.frame//4)*EXPLOSION_H, EXPLOSION_W, EXPLOSION_H, self.x, self.y)
+        Explosion.image.clip_draw((self.frame%4)*self.WIDTH, (self.frame//4)*self.HEIGHT, self.WIDTH, self.HEIGHT, self.x, self.y)
     def update(self):
         global player
         self.y -= player.car.speed
         self.frame += 1
         
-class Coin(BaseObject):
+class Coin(base.BaseObject):
     image = None
+    WIDTH, HEIGHT = 50, 50
+    FRAME_SIZE = 10
     def __init__(self, x, y):
         self.x, self.y = x, y
         self.frame = 0
@@ -164,17 +160,17 @@ class Coin(BaseObject):
             Coin.image = pico2d.load_image('res/coin.png')
             print('Coin', self.image)
     def draw(self):
-        Coin.image.clip_draw(self.frame*COIN_W, 0, COIN_W, COIN_H, self.x, self.y)
+        Coin.image.clip_draw(self.frame*self.WIDTH, 0, self.WIDTH, self.HEIGHT, self.x, self.y)
         #self.image.clip_composite_draw(self.frame*100, 300, 100, 100, math.pi/2, '', self.x, self.y, 100, 100)
     def update(self):
         global info
-        self.frame = (self.frame + 1) % 10
+        self.frame = (self.frame + 1) % self.FRAME_SIZE
         dx, dy = info.coin.x - self.x, info.coin.y - self.y
         arctan = math.atan2(dy, dx)
         self.x += self.speed*math.cos(arctan)
         self.y += self.speed*math.sin(arctan)
         
-class Player(BaseObject):
+class Player(base.BaseObject):
     def __init__(self):
         global player_data
         self.coin = player_data['player']['coin']
@@ -215,17 +211,15 @@ def handle_events():
             elif e.key == pico2d.SDLK_DOWN:
                 player.car.accel += DELAY*10*math.log2(player.car.level + 1)
 
-def getRect(car):
-    return [[car.x - CAR_W//2, car.y - CAR_H//2], [car.x + CAR_W//2, car.y + CAR_H//2]]
 def checkRect(r1, r2):
     if r1[0][0] > r2[1][0] or r1[0][1] > r2[1][1] or r1[1][0] < r2[0][0] or r1[1][1] < r2[0][1]:
         return False
     return True
 def collision_check():
     global player, cars, coins, fires
-    pRect = getRect(player.car)
+    pRect = player.car.getRect()
     for c in cars:
-        if checkRect(pRect, getRect(c)):
+        if checkRect(pRect, c.getRect()):
             c.state = DEAD
             fires.append(Explosion(c.x, c.y))
             for i in range(c.level):    #터트린 차량의 레벨에 비례한 코인 생성
@@ -289,7 +283,7 @@ def update():
     
     i, l = 0, len(fires)
     while i < l:         #폭발 업데이트
-        if fires[i].frame <= EXPLOSION_FRAME_SIZE:
+        if fires[i].frame <= Explosion.FRAME_SIZE:
             fires[i].update()
             i+=1
         else:

@@ -28,7 +28,7 @@ def tree(x, y, level, head):
     tree(cur_x, cur_y, level+1, head+random.randrange(25,35))
     tree(cur_x, cur_y, level+1, head-random.randrange(25,35))
 
-max_level=7
+max_level=10
 pu()
 tree(0, -300, 0, 90)
 done()
