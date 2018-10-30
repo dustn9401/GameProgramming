@@ -5,7 +5,7 @@ import racing_state
 class Garage:
     def __init__(self):
         self.image = pico2d.load_image('res/garage.png')
-        print(self.image)
+        print('Garage', self.image)
     def draw(self):
         self.image.draw(400,300)
 

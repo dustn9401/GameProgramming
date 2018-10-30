@@ -4,13 +4,13 @@ import garage_state
 class Title:
     def __init__(self):
         self.image = load_image('res/title.png')
-        print(self.image)
+        print('Title', self.image)
     def draw(self):
         self.image.draw(400,300)
 class ButtonStart:
     def __init__(self):
         self.image = load_image('res/gamestart.png')
-        print(self.image)
+        print('ButtonStart', self.image)
     def draw(self):
         self.image.draw(400,100)
 def handle_events():

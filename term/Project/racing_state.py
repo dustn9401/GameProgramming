@@ -36,14 +36,13 @@ class Number:
         self.x, self.y = x, y
         if Number.image == None:
             Number.image = pico2d.load_image('res/numbers.png')
-            print(self.image)
+            print('Number', self.image)
     def draw(self, num):
         Number.image.clip_draw(num*NUM_W, 0, NUM_W, NUM_H, self.x, self.y)
 class Numbers(BaseObject):
     def __init__(self, x, y):
         self.x, self.y = x, y
         self.num = 0
-        self.num_len = 0
         self.numbers = [Number(self.x + i*(NUM_W), self.y) for i in range(MAX_INT_LENGTH)]
     def draw(self):
         string = str(self.num)
@@ -73,7 +72,7 @@ class Tree(BaseObject):
         self.y = random.randint(0, HEIGHT)
         if Tree.image == None:
             Tree.image = pico2d.load_image('res/tree.png')
-            print(self.image)
+            print('Tree', self.image)
     def draw(self):
         Tree.image.draw(self.x, self.y)
     def update(self):
@@ -85,7 +84,7 @@ class Road(BaseObject):
         self.x = WIDTH//2
         self.y = HEIGHT//2
         self.image = pico2d.load_image('res/road.png')
-        print(self.image)
+        print('Road', self.image)
     def draw(self):
         self.image.draw(self.x, self.y)
     def update(self):
@@ -107,6 +106,7 @@ class Car(BaseObject):
         self.counter = random.randrange(0,100)
         if Car.image == None:
             Car.image = pico2d.load_image('res/car.png')
+            print('Car', Car.image)
     def draw(self):
         Car.image.clip_draw(self.state*CAR_W, (self.level-1)*CAR_H, CAR_W, CAR_H, self.x, self.y)
         
@@ -146,7 +146,7 @@ class Explosion(BaseObject):
         self.frame = 0
         if Explosion.image == None:
             Explosion.image = pico2d.load_image('res/Explosion.png')
-            print(self.image)
+            print('Explosion', Explosion.image)
     def draw(self):
         Explosion.image.clip_draw((self.frame%4)*EXPLOSION_W, (self.frame//4)*EXPLOSION_H, EXPLOSION_W, EXPLOSION_H, self.x, self.y)
     def update(self):
@@ -162,7 +162,7 @@ class Coin(BaseObject):
         self.speed = 10
         if Coin.image == None:
             Coin.image = pico2d.load_image('res/coin.png')
-            print(self.image)
+            print('Coin', self.image)
     def draw(self):
         Coin.image.clip_draw(self.frame*COIN_W, 0, COIN_W, COIN_H, self.x, self.y)
         #self.image.clip_composite_draw(self.frame*100, 300, 100, 100, math.pi/2, '', self.x, self.y, 100, 100)
@@ -293,7 +293,7 @@ def update():
             fires[i].update()
             i+=1
         else:
-            del fires[i]
+            del fires[i]    #프레임이 모두 출력되면 삭제하는 코드. update() 내부에서 스스로를 삭제할 수 있는 방법?
             l-=1
     
     i, l = 0, len(coins)    
