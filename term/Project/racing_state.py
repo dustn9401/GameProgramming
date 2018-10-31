@@ -88,7 +88,7 @@ class Road(base.BaseObject):
 
 class Car(base.BaseObject):
     image = None
-    WIDTH, HEIGHT = 48, 62
+    WIDTH, HEIGHT = 46, 62
     def __init__(self, level):
         self.x = random.randint(ROAD_L + 100, ROAD_R - 100)
         self.y = random.randint(0, HEIGHT)

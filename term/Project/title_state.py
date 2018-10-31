@@ -1,31 +1,40 @@
-from pico2d import *
+import pico2d
 import game_framework
 import garage_state
+import base
 class Title:
     def __init__(self):
-        self.image = load_image('res/title.png')
+        self.image = pico2d.load_image('res/title.png')
         print('Title', self.image)
     def draw(self):
         self.image.draw(400,300)
-class ButtonStart:
+class ButtonStart(base.BaseObject):
+    image = None
+    WIDTH, HEIGHT = 330, 140
     def __init__(self):
-        self.image = load_image('res/gamestart.png')
+        self.x, self.y = 400, 100
+        if ButtonStart.image == None:
+            ButtonStart.image = pico2d.load_image('res/gamestart.png')
         print('ButtonStart', self.image)
     def draw(self):
-        self.image.draw(400,100)
+        self.image.draw(self.x, self.y)
+        self.drawRect()
+    def update(self):
+        pass
 def handle_events():
-    events = get_events()
+    global start
+    events = pico2d.get_events()
     for e in events:
-        if e.type == SDL_QUIT:
+        if e.type == pico2d.SDL_QUIT:
             game_framework.quit()
-        elif e.type == SDL_KEYDOWN:
-            if e.key == SDLK_ESCAPE:
+        elif e.type == pico2d.SDL_KEYDOWN:
+            if e.key == pico2d.SDLK_ESCAPE:
                 game_framework.quit()
-            if e.key == SDLK_SPACE:
+            if e.key == pico2d.SDLK_SPACE:
                 game_framework.push_state(garage_state)
-        elif e.type == SDL_MOUSEBUTTONDOWN:
-            if e.button == SDL_BUTTON_LEFT:
-                if e.x > 235 and e.x < 564 and e.y > 429 and e.y < 570:
+        elif e.type == pico2d.SDL_MOUSEBUTTONDOWN:
+            if e.button == pico2d.SDL_BUTTON_LEFT:
+                if start.inRect(e.x, 600 - e.y):
                     game_framework.push_state(garage_state)
 
 def enter():
@@ -54,10 +63,10 @@ def main():
 
 def draw():
     global title, start
-    clear_canvas()
+    pico2d.clear_canvas()
     title.draw()
     start.draw()
-    update_canvas()
+    pico2d.update_canvas()
 
 def update():
     pass

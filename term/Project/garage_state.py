@@ -1,7 +1,7 @@
 import pico2d
 import game_framework
 import racing_state
-
+import base
 class Garage:
     def __init__(self):
         self.image = pico2d.load_image('res/garage.png')
