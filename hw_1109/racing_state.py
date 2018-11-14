@@ -4,14 +4,16 @@ import random
 import math
 import json
 import base
-WIDTH, HEIGHT = 800, 600    #window size
+import bg
+#WIDTH, HEIGHT = pico2d.get_canvas_width(), pico2d.get_canvas_height()    #window size
+WIDTH, HEIGHT = 800, 600
 MAX_LEV = 6     #max level
 MAX_SPEEDS = [i*10 for i in range(MAX_LEV)]
 MAX_INT_LENGTH = 10
 
 LEFT, RIGHT, UP, STOP, DEAD = range(5)    #car state
-NUM_CAR = 20
-NUM_TREE = 100
+NUM_CAR = 0
+NUM_TREE = 0
 ROAD_L, ROAD_R = 100, 700
 DELAY=0.02      #draw 시 delay함수 호출, accel, dir 변수 함께 조정
 
@@ -57,36 +59,34 @@ class Info(base.BaseObject):
         self.coin.x, self.coin.y = self.x, self.y
         
 #======================= 나무, 도로, 차 그리기 ======================
-class Tree(base.BaseObject):
-    image = None
-    def __init__(self):
-        self.x = random.randint(0,ROAD_L) if random.randint(0,1) else random.randint(ROAD_R, WIDTH)
-        self.y = random.randint(0, HEIGHT)
-        if Tree.image == None:
-            Tree.image = pico2d.load_image('res/tree.png')
-            print('Tree', self.image)
-    def draw(self):
-        Tree.image.draw(self.x, self.y)
-    def update(self):
-        global player
-        self.y -= player.car.y_speed
-        if self.y < 0: self.y = HEIGHT+200
-class Road(base.BaseObject):
-    def __init__(self):
-        self.image = pico2d.load_image('res/road.png')
-        self.x = self.image.w * 0.75
-        self.y = HEIGHT//2
-        print('Road', self.image)
-    def draw(self):
-        self.image.draw(self.x, self.y)
-        print(self.x, self.y)
-    def update(self):
-        global player
-        self.y -= player.car.y_speed
-        if player.car.x == 100 or player.car.x == WIDTH - 100:
-            self.x = pico2d.clamp(WIDTH//2, self.x - player.car.dir*player.car.x_speed, self.image.w//2 - 100)
-        if self.y > self.image.h - 100 or self.y < 100:
-            self.y = 300
+#class Tree(base.BaseObject):
+#    image = None
+#    def __init__(self):
+#        self.x = random.randint(0,ROAD_L) if random.randint(0,1) else random.randint(ROAD_R, WIDTH)
+#        self.y = random.randint(0, HEIGHT)
+#        if Tree.image == None:
+#            Tree.image = pico2d.load_image('res/tree.png')
+#            print('Tree', self.image)
+#    def draw(self):
+#        Tree.image.draw(self.x, self.y)
+#    def update(self):
+#        global player
+#        self.y -= player.car.y_speed
+#        if self.y < 0: self.y = HEIGHT+200
+##class Road(base.BaseObject):
+##    WIDTH, HEIGHT = 800, 1534
+##    def __init__(self):
+##        self.x = WIDTH//2
+##        self.y = HEIGHT//2
+##        self.image = pico2d.load_image('res/road.png')
+##        print('Road', self.image)
+##    def draw(self):
+##        self.image.draw(self.x, self.y)
+##    def update(self):
+##        global player
+##        self.y -= player.car.y_speed
+##        if self.y > self.HEIGHT - 100 or self.y < 100:
+##            self.y = 300
 
 class Car(base.BaseObject):
     image = None
@@ -97,8 +97,8 @@ class Car(base.BaseObject):
         self.accel = 0
         self.dir = 0
         self.level = level
+        self.x_speed = 0
         self.y_speed = random.uniform(1.0, MAX_SPEEDS[self.level])
-        self.x_speed = 200*DELAY*math.log2(self.level+1)
         self.state = STOP
         self.counter = random.randrange(0,100)
         if Car.image == None:
@@ -113,10 +113,11 @@ class Car(base.BaseObject):
         if self.state == DEAD:
             self.reset()
         # ============= 좌표 업데이트 ==============
+        self.x_speed = 200*DELAY*self.dir*math.log2(self.level+1)
+        self.x = pico2d.clamp(100, self.x + self.x_speed, WIDTH - 100)
         self.y_speed = pico2d.clamp(-MAX_SPEEDS[self.level], self.y_speed + self.accel, MAX_SPEEDS[self.level])      #속도 += 가속도
         self.y -= (player.car.y_speed - self.y_speed)        #내 차와의 상대속도만큼 y위치 변경
-        self.x = pico2d.clamp(100, self.x + self.dir*self.x_speed, WIDTH - 100)
-        if self.y < -100 or self.y > 900:
+        if self.y < -100 or self.y > HEIGHT + 200:
             self.reset()
 
         # ============= 상태 업데이트 ==============
@@ -133,6 +134,8 @@ class Car(base.BaseObject):
         self. x = random.randint(ROAD_L+100, ROAD_R-100)
         self. y = 0-100 if random.randint(0,1) else HEIGHT+100
         self.y_speed = random.uniform(1.0, MAX_SPEEDS[self.level])
+    def pos(self):
+        return self.x - self.bg.x, self.y - self.bg.y
         
 class Explosion(base.BaseObject):
     image = None
@@ -158,7 +161,8 @@ class Coin(base.BaseObject):
     def __init__(self, x, y):
         self.x, self.y = x, y
         self.frame = 0
-        self.speed = 10
+        self.y_speed = 10
+        self.x_speed = 10
         if Coin.image == None:
             Coin.image = pico2d.load_image('res/coin.png')
             print('Coin', self.image)
@@ -170,8 +174,8 @@ class Coin(base.BaseObject):
         self.frame = (self.frame + 1) % self.FRAME_SIZE
         dx, dy = info.coin.x - self.x, info.coin.y - self.y
         arctan = math.atan2(dy, dx)
-        self.x += self.speed*math.cos(arctan)
-        self.y += self.speed*math.sin(arctan)
+        self.x += self.x_speed*math.cos(arctan)
+        self.y += self.y_speed*math.sin(arctan)
         
 class Player(base.BaseObject):
     def __init__(self):
@@ -179,6 +183,7 @@ class Player(base.BaseObject):
         self.coin = player_data['player']['coin']
         self.level = player_data['player']['level']
         self.car = Car(self.level)
+        self.x, self.y = self.car.x, self.car.y
     def draw(self):
         self.car.draw()
     def update(self):
@@ -186,6 +191,8 @@ class Player(base.BaseObject):
         self.car.update()
         player_data['player']['coin'] = self.coin
         player_data['player']['level'] = self.level
+        self.x += self.car.x_speed
+        self.y += self.car.y_speed
         
 def handle_events():
     global road, player
@@ -237,7 +244,7 @@ def save_data():
     with open('res/player_data.json', 'w') as fp:
         json.dump(player_data, fp)
 def enter():
-    global player, cars, road, coins, info, fires, trees, player_data
+    global player, cars, road, coins, info, fires, player_data
     load_data()    
     fires = []
     info = Info()
@@ -245,24 +252,19 @@ def enter():
     player = Player()
     player.car.x, player.car.y = 400,200
     cars = []
-    trees = []
     for i in range(NUM_CAR):
         cars.append(Car(random.randrange(1,MAX_LEV)))
-    for i in range(NUM_TREE):
-        trees.append(Tree())
-    road = Road()
+    road = bg.Background()
 
 def exit():
-    global road, player, cars, coins, fires, trees, info
+    global road, player, cars, coins, fires, info
     save_data()
-    del player, road, cars, coins, fires, trees, info
+    del player, road, cars, coins, fires, info
 
 def draw():
     global road, player, cars, coins, fires
     pico2d.clear_canvas()
     road.draw()
-    for t in trees:
-        t.draw()
     for c in cars:
         c.draw()
     for c in coins:
@@ -303,8 +305,6 @@ def update():
         else:
             coins[i].update()
             i+=1
-    for t in trees:
-        t.update()
     info.update()
 def pause():
     pass
