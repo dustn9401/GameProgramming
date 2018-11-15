@@ -7,9 +7,10 @@ import base
 import background
 import garage_state
 import time
+import ui
 #WIDTH, HEIGHT = pico2d.get_canvas_width(), pico2d.get_canvas_height()    #window size
 WIDTH, HEIGHT = 800, 600
-MAX_LEV = 5     #max level
+MAX_LEV = 6     #max level
 MAX_INT_LENGTH = 10
 
 LEFT, RIGHT, UP, STOP, DEAD = range(5)    #car state
@@ -19,44 +20,28 @@ ROAD_L, ROAD_R = 100, 700
 DELAY=0.01      #draw 시 delay함수 호출, accel, dir 변수 함께 조정
 
 # =============== 코인, 속도, 숫자 표시 관련 =====================
-class Number(base.BaseObject):
-    image = None
-    WIDTH, HEIGHT = 44, 58
-    def __init__(self, x, y):
-        self.x, self.y = x, y
-        if Number.image == None:
-            Number.image = pico2d.load_image('res/img/numbers.png')
-            print('Number', self.image)
-    def draw(self, num):
-        Number.image.clip_draw(num*self.WIDTH, 0, self.WIDTH, self.HEIGHT, self.x, self.y)
-    def update(self):
-        pass
-class Numbers(base.BaseObject):
-    def __init__(self, x, y):
-        self.x, self.y = x, y
-        self.num = 0
-        self.numbers = [Number(self.x + i*Number.WIDTH, self.y) for i in range(MAX_INT_LENGTH)]
-        self.WIDTH = 44 * len(str(self.num))
-        self.HEIGHT = 58
-    def draw(self):
-        string = str(self.num)
-        for i in range(len(string)):
-            self.numbers[i].draw(int(string[i]))
-    def update(self):        
-        for n in self.numbers: n.update()
 class Info(base.BaseObject):
     WIDTH, HEIGHT = 100, 100
     def __init__(self):
-        self.x, self.y = 500, 500
+        self.x, self.y = 550, 550
         self.coin = Coin(self.x, self.y)
-        self.coin_numbers = Numbers(self.x + Coin.WIDTH, self.y)
+        self.btn = []
+        self.lbl=[]
+        self.st = time.time()
     def draw(self):
+        ui.draw()
         self.coin.draw()
-        self.coin_numbers.draw()
     def update(self):
         global player
+        self.lbl=[\
+            ui.Label('%d $'%player.coin, self.x+20, self.y, 30, ui.FONT_2),\
+            ui.Label('시간: %.3f 초'%(time.time() - self.st), self.x+20, self.y - 30, 30, ui.FONT_2),\
+            ui.Label('속도: %d km/s'%player.car.y_speed, self.x+20, self.y - 60, 30, ui.FONT_2),\
+            ]
+        ui.labels = self.lbl
+        ui.buttons = self.btn
+        ui.update()
         self.coin.update()
-        self.coin_numbers.num = player.coin
         self.coin.x, self.coin.y = self.x, self.y
         
 #======================= 차 그리기 ======================
@@ -74,17 +59,18 @@ class Car(base.BaseObject):
         self.x_speed = 200*DELAY*math.log2(self.level+1)
         self.state = STOP
         self.frame = 0
-        self.max_frame = 8
+        self.max_frame = garage_state.car_info[self.level-1]['frame']
         self.image = None
         if Car.images[self.level] == None:
             Car.images[self.level] = pico2d.load_image('res/img/lv_%d.png'%self.level)
         self.image = Car.images[self.level]
         self.WIDTH = self.image.w
         self.HEIGHT = self.image.h // self.max_frame
+        self.st, self.ed = time.time(), 0
     def draw(self):
         self.image.clip_draw(0, self.frame*(self.image.h//self.max_frame), self.image.w, self.image.h//self.max_frame, self.x, self.y)
-        self.drawRect()
-        #clip_composite_draw(self.frame*100, 300, 100, 100, math.pi/2, '', self.x, self.y, 100, 100)
+        #self.drawRect()
+        #clip_composite_draw(self.frame*100, 300, 100, 100, math.pi, '', self.x, self.y, 100, 100)
     def update(self):
         global player, bg
         if self.state == DEAD:
@@ -108,8 +94,12 @@ class Car(base.BaseObject):
         elif self.dir == -1:
             self.state = LEFT
         else:
-            self.state = UP    
-        self.frame = (self.frame + 1) % self.max_frame
+            self.state = UP
+
+        self.ed = time.time()
+        if self.ed - self.st > 0.05:
+            self.frame = (self.frame + 1) % self.max_frame
+            self.st = self.ed
     def reset(self):
         self.x = random.randint(ROAD_L+100, ROAD_R-100)
         self.y = 0-100 if random.randint(0,1) else HEIGHT+100
@@ -144,11 +134,7 @@ class Death(base.BaseObject):
         self.x, self.y = x, y
         self.frame = 0
         self.level = lev
-        self.max_frame = 0
-        if self.level == 1: 
-            self.max_frame = 8
-        else:
-            self.max_frame = 7
+        self.max_frame = garage_state.car_info[self.level-1]['death_frame']
         if Death.images[self.level] == None:
             Death.images[self.level] = pico2d.load_image('res/img/dead_lv%d.png'%self.level)
         self.image = Death.images[self.level]
@@ -180,12 +166,16 @@ class Coin(base.BaseObject):
         if Coin.image == None:
             Coin.image = pico2d.load_image('res/img/coin.png')
             print('Coin', self.image)
+        self.st, self.ed = time.time(), 0
     def draw(self):
         Coin.image.clip_draw(self.frame*self.WIDTH, 0, self.WIDTH, self.HEIGHT, self.x, self.y)
         #self.image.clip_composite_draw(self.frame*100, 300, 100, 100, math.pi/2, '', self.x, self.y, 100, 100)
     def update(self):
         global info
-        self.frame = (self.frame + 1) % self.FRAME_SIZE
+        self.ed = time.time()
+        if self.ed - self.st > 0.05:
+            self.frame = (self.frame + 1) % self.FRAME_SIZE
+            self.st = self.ed
         dx, dy = info.coin.x - self.x, info.coin.y - self.y
         arctan = math.atan2(dy, dx)
         self.x += self.speed*math.cos(arctan)
@@ -200,9 +190,10 @@ class Player(base.BaseObject):
     endl = False
     def __init__(self):
         global player_data
+        garage = garage_state.garage
         self.coin = player_data['player']['coin']
         self.level = player_data['player']['level']
-        self.car = Car(self.level)
+        self.car = Car(garage.slot[garage.select] + 1)
         self.car.x = WIDTH//2
         self.car.y = HEIGHT//4
         self.car.y_speed = 0
@@ -255,7 +246,7 @@ def collision_check():
     for c in cars:
         if checkRect(pRect, c.getRect()):
             c.state = DEAD
-            if c.level <= 4:
+            if c.level <= 6:
                 fires.append(Death(c.x, c.y, c.level))
             else:
                 fires.append(Explosion(c.x, c.y))
