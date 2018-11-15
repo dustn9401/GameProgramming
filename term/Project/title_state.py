@@ -2,27 +2,25 @@ import pico2d
 import game_framework
 import garage_state
 import base
+import ui
+def onClick(context):
+    if context == 'gamestart': 
+        game_framework.push_state(garage_state)
 class Title:
     def __init__(self):
-        self.image = pico2d.load_image('res/title.png')
+        self.btn = [\
+                    ui.Button('res/img/gamestart', 500, 100, onClick, 'gamestart'),\
+                ]
+        self.image = pico2d.load_image('res/img/title.png')
         print('Title', self.image)
-    def draw(self):
-        self.image.draw(400,300)
-class ButtonStart(base.BaseObject):
-    image = None
-    WIDTH, HEIGHT = 330, 140
-    def __init__(self):
-        self.x, self.y = 400, 100
-        if ButtonStart.image == None:
-            ButtonStart.image = pico2d.load_image('res/gamestart.png')
-        print('ButtonStart', self.image)
-    def draw(self):
-        self.image.draw(self.x, self.y)
-        self.drawRect()
     def update(self):
-        pass
+        ui.buttons = self.btn
+        ui.update()
+    def draw(self):
+        self.image.draw(400, 300)
+        ui.draw()
 def handle_events():
-    global start
+    global title
     events = pico2d.get_events()
     for e in events:
         if e.type == pico2d.SDL_QUIT:
@@ -32,49 +30,27 @@ def handle_events():
                 game_framework.quit()
             if e.key == pico2d.SDLK_SPACE:
                 game_framework.push_state(garage_state)
-        elif e.type == pico2d.SDL_MOUSEBUTTONDOWN:
-            if e.button == pico2d.SDL_BUTTON_LEFT:
-                if start.inRect(e.x, 600 - e.y):
-                    game_framework.push_state(garage_state)
+        ui.handle_event(e)
 
 def enter():
-    global title, start
+    global title
     title = Title()
-    start = ButtonStart()
 
 def exit():
-    global title, start
-    del title, start
+    global title
+    del title
 
 def pause():
     pass
 def resume():
     pass
 
-def main():
-    global running
-    enter()
-    while running:
-        handle_events()
-        print(running)
-        update()
-        draw()
-    exit()
-
 def draw():
-    global title, start
+    global title
     pico2d.clear_canvas()
     title.draw()
-    start.draw()
     pico2d.update_canvas()
 
 def update():
-    pass
-
-# fill here
-
-
-if __name__ == '__main__':
-    main()
-
-
+    global title
+    title.update()

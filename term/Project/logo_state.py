@@ -4,7 +4,7 @@ import title_state
 
 class Credit:
     def __init__(self):
-        self.image = load_image('res/kpu_credit.png')
+        self.image = load_image('res/img/kpu_credit.png')
         print('Credit', self.image)
     def draw(self):
         self.image.draw(400,300)

@@ -33,7 +33,7 @@ class Road(base.BaseObject):
     image = None
     def __init__(self):
         if Road.image == None:
-            Road.image = pico2d.load_image('res/road.png')
+            Road.image = pico2d.load_image('res/img/road.png')
             print('Road', self.image)
         self.x = Road.image.w//2
         self.y = 0
@@ -60,7 +60,7 @@ class Tree(base.BaseObject):
         self.x = None
         self.y = random.randint(0, ch)
         if Tree.image == None:
-            Tree.image = pico2d.load_image('res/tree.png')
+            Tree.image = pico2d.load_image('res/img/tree.png')
             print('Tree', self.image)
     def draw(self):
         Tree.image.draw(self.x, self.y)
@@ -80,7 +80,7 @@ class Cloud(base.BaseObject):
         self.x = random.randint(0, cw)
         self.y = random.randint(0, ch)
         if Cloud.image == None:
-            Cloud.image = pico2d.load_image('res/cloud.png')
+            Cloud.image = pico2d.load_image('res/img/cloud.png')
             print('Cloud', self.image)
     def draw(self):
         Cloud.image.draw(self.x, self.y)

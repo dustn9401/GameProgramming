@@ -5,11 +5,11 @@ import math
 import json
 import base
 import background
+import garage_state
 import time
 #WIDTH, HEIGHT = pico2d.get_canvas_width(), pico2d.get_canvas_height()    #window size
 WIDTH, HEIGHT = 800, 600
-MAX_LEV = 6     #max level
-MAX_SPEEDS = [i*10 for i in range(MAX_LEV)]
+MAX_LEV = 5     #max level
 MAX_INT_LENGTH = 10
 
 LEFT, RIGHT, UP, STOP, DEAD = range(5)    #car state
@@ -25,7 +25,7 @@ class Number(base.BaseObject):
     def __init__(self, x, y):
         self.x, self.y = x, y
         if Number.image == None:
-            Number.image = pico2d.load_image('res/numbers.png')
+            Number.image = pico2d.load_image('res/img/numbers.png')
             print('Number', self.image)
     def draw(self, num):
         Number.image.clip_draw(num*self.WIDTH, 0, self.WIDTH, self.HEIGHT, self.x, self.y)
@@ -62,23 +62,27 @@ class Info(base.BaseObject):
 #======================= 차 그리기 ======================
 
 class Car(base.BaseObject):
-    image = None
-    WIDTH, HEIGHT = 46, 62
+    images = [None for i in range(MAX_LEV)]
     def __init__(self, level):
         self.x = random.randint(ROAD_L + 100, ROAD_R - 100)
         self.y = random.randint(0, HEIGHT)
         self.accel = 0
         self.dir = 0
         self.level = level
-        self.y_speed = random.uniform(1.0, MAX_SPEEDS[self.level])
+        self.max_speed = garage_state.car_info[self.level - 1]['speed']
+        self.y_speed = random.uniform(1.0, self.max_speed)
         self.x_speed = 200*DELAY*math.log2(self.level+1)
         self.state = STOP
-        self.counter = random.randrange(0,100)
-        if Car.image == None:
-            Car.image = pico2d.load_image('res/car.png')
-            print('Car', Car.image)
+        self.frame = 0
+        self.max_frame = 8
+        self.image = None
+        if Car.images[self.level] == None:
+            Car.images[self.level] = pico2d.load_image('res/img/lv_%d.png'%self.level)
+        self.image = Car.images[self.level]
+        self.WIDTH = self.image.w
+        self.HEIGHT = self.image.h // self.max_frame
     def draw(self):
-        Car.image.clip_draw(self.state*self.WIDTH, (self.level-1)*self.HEIGHT, self.WIDTH, self.HEIGHT, self.x, self.y)
+        self.image.clip_draw(0, self.frame*(self.image.h//self.max_frame), self.image.w, self.image.h//self.max_frame, self.x, self.y)
         self.drawRect()
         #clip_composite_draw(self.frame*100, 300, 100, 100, math.pi/2, '', self.x, self.y, 100, 100)
     def update(self):
@@ -90,7 +94,7 @@ class Car(base.BaseObject):
         self.x_speed = 200*DELAY*self.dir*math.log2(self.level+1)
         self.x = pico2d.clamp(100-bg.road.x, self.x + self.x_speed, bg.road.image.w - bg.road.x - 100)
         
-        self.y_speed = pico2d.clamp(-MAX_SPEEDS[self.level], self.y_speed + self.accel, MAX_SPEEDS[self.level])      #속도 += 가속도
+        self.y_speed = pico2d.clamp(-self.max_speed, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
         self.y -= (player.car.y_speed - self.y_speed)
         
         if self.y < -100 or self.y > HEIGHT + 200:
@@ -105,12 +109,12 @@ class Car(base.BaseObject):
             self.state = LEFT
         else:
             self.state = UP    
-        self.counter = (self.counter + 1)%100
+        self.frame = (self.frame + 1) % self.max_frame
     def reset(self):
         self.x = random.randint(ROAD_L+100, ROAD_R-100)
         self.y = 0-100 if random.randint(0,1) else HEIGHT+100
         self.x_speed = 0
-        self.y_speed = random.uniform(1.0, MAX_SPEEDS[self.level])
+        self.y_speed = random.uniform(1.0, self.max_speed)
         
 class Explosion(base.BaseObject):
     image = None
@@ -120,7 +124,7 @@ class Explosion(base.BaseObject):
         self.x, self.y = x, y
         self.frame = 0
         if Explosion.image == None:
-            Explosion.image = pico2d.load_image('res/Explosion.png')
+            Explosion.image = pico2d.load_image('res/img/Explosion.png')
             print('Explosion', Explosion.image)
         self.st, self.ed = time.time(), 0
         self.end = False
@@ -134,7 +138,36 @@ class Explosion(base.BaseObject):
             self.st = self.ed
         if self.frame > Explosion.FRAME_SIZE:
             self.end = True
-        
+class Death(base.BaseObject):
+    images = [None for i in range(MAX_LEV)]
+    def __init__(self, x, y, lev):
+        self.x, self.y = x, y
+        self.frame = 0
+        self.level = lev
+        self.max_frame = 0
+        if self.level == 1: 
+            self.max_frame = 8
+        else:
+            self.max_frame = 7
+        if Death.images[self.level] == None:
+            Death.images[self.level] = pico2d.load_image('res/img/dead_lv%d.png'%self.level)
+        self.image = Death.images[self.level]
+        self.WIDTH, self.HEIGHT = self.image.w, self.image.h
+        self.st, self.ed = time.time(), 0
+        self.end = False
+    def draw(self):
+        if self.level == 1:
+            self.image.clip_draw(0, (self.max_frame - self.frame - 1)*(self.image.h//self.max_frame), self.image.w, self.image.h//self.max_frame, self.x, self.y)
+        else:
+            self.image.clip_draw(self.frame*self.image.w//self.max_frame, 0, self.image.w//self.max_frame, self.image.h, self.x, self.y)
+    def update(self):
+        global player
+        self.ed = time.time()
+        if self.ed - self.st > 0.1: 
+            self.frame += 1
+            self.st = self.ed
+        if self.frame > self.max_frame:
+            self.end = True
 class Coin(base.BaseObject):
     image = None
     WIDTH, HEIGHT = 50, 50
@@ -145,7 +178,7 @@ class Coin(base.BaseObject):
         self.speed = 10
         self.end = False
         if Coin.image == None:
-            Coin.image = pico2d.load_image('res/coin.png')
+            Coin.image = pico2d.load_image('res/img/coin.png')
             print('Coin', self.image)
     def draw(self):
         Coin.image.clip_draw(self.frame*self.WIDTH, 0, self.WIDTH, self.HEIGHT, self.x, self.y)
@@ -222,7 +255,10 @@ def collision_check():
     for c in cars:
         if checkRect(pRect, c.getRect()):
             c.state = DEAD
-            fires.append(Explosion(c.x, c.y))
+            if c.level <= 4:
+                fires.append(Death(c.x, c.y, c.level))
+            else:
+                fires.append(Explosion(c.x, c.y))
             for i in range(c.level):    #터트린 차량의 레벨에 비례한 코인 생성
                 coins.append(Coin(c.x + random.randint(-20, 20), c.y + random.randint(-20, 20))) 
             player.coin += c.level
@@ -275,7 +311,7 @@ def update():
     player.update()     #플레이어 차 업테이트
     for c in cars:
         c.update()          #상대 차들 업데이트
-        if c.counter == 0:
+        if random.randint(0, 100) == 0:
 #            pass
             c.dir = random.randint(-1, 1)
             
@@ -286,7 +322,6 @@ def update():
         c.update()
         if c.end: del coins[i]
         
-    print('fire = %d, coin = %d'%(len(fires), len(coins)))
     bg.update()
     info.update()
 def pause():
