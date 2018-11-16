@@ -36,7 +36,7 @@ class Info(base.BaseObject):
         self.lbl=[\
             ui.Label('%d $'%player.coin, self.x+20, self.y, 30, ui.FONT_2),\
             ui.Label('시간: %.3f 초'%(time.time() - self.st), self.x+20, self.y - 30, 30, ui.FONT_2),\
-            ui.Label('속도: %d km/s'%player.car.y_speed, self.x+20, self.y - 60, 30, ui.FONT_2),\
+            ui.Label('속도: %d km/h'%player.car.y_speed, self.x+20, self.y - 60, 30, ui.FONT_2),\
             ]
         ui.labels = self.lbl
         ui.buttons = self.btn
@@ -54,12 +54,12 @@ class Car(base.BaseObject):
         self.accel = 0
         self.dir = 0
         self.level = level
-        self.max_speed = garage_state.car_info[self.level - 1]['speed']
+        self.max_speed = garage_state.car_info[str(self.level - 1)]['speed']
         self.y_speed = random.uniform(1.0, self.max_speed)
         self.x_speed = 200*DELAY*math.log2(self.level+1)
         self.state = STOP
         self.frame = 0
-        self.max_frame = garage_state.car_info[self.level-1]['frame']
+        self.max_frame = garage_state.car_info[str(self.level-1)]['frame']
         self.image = None
         if Car.images[self.level] == None:
             Car.images[self.level] = pico2d.load_image('res/img/lv_%d.png'%self.level)
@@ -68,9 +68,11 @@ class Car(base.BaseObject):
         self.HEIGHT = self.image.h // self.max_frame
         self.st, self.ed = time.time(), 0
     def draw(self):
+        global player
+        
         self.image.clip_draw(0, self.frame*(self.image.h//self.max_frame), self.image.w, self.image.h//self.max_frame, self.x, self.y)
-        #self.drawRect()
-        #clip_composite_draw(self.frame*100, 300, 100, 100, math.pi, '', self.x, self.y, 100, 100)
+        #self.image.clip_composite_draw(0, self.frame*(self.image.h//self.max_frame), self.image.w, self.image.h//self.max_frame, 0, 'r', self.x, self.y, 100, 100)
+        self.drawRect()
     def update(self):
         global player, bg
         if self.state == DEAD:
@@ -134,7 +136,7 @@ class Death(base.BaseObject):
         self.x, self.y = x, y
         self.frame = 0
         self.level = lev
-        self.max_frame = garage_state.car_info[self.level-1]['death_frame']
+        self.max_frame = garage_state.car_info[str(self.level-1)]['death_frame']
         if Death.images[self.level] == None:
             Death.images[self.level] = pico2d.load_image('res/img/dead_lv%d.png'%self.level)
         self.image = Death.images[self.level]
@@ -189,25 +191,29 @@ class Coin(base.BaseObject):
 class Player(base.BaseObject):
     endl = False
     def __init__(self):
-        global player_data
         garage = garage_state.garage
-        self.coin = player_data['player']['coin']
-        self.level = player_data['player']['level']
-        self.car = Car(garage.slot[garage.select] + 1)
+        self.coin = garage_state.player_info['coin']
+        self.level = garage.slot[garage.select] + 1
+        self.car = Car(self.level)
         self.car.x = WIDTH//2
         self.car.y = HEIGHT//4
         self.car.y_speed = 0
         self.dx = 0
+        self.st, self.ed = time.time(), 0
     def draw(self):
         self.car.draw()
     def update(self):
-        global player_data, bg, cars
-        
+        global bg, cars
         tx = self.car.x
         self.car.update()
         self.dx = self.car.x - tx
-        player_data['player']['coin'] = self.coin
-        player_data['player']['level'] = self.level
+        garage_state.player_info['coin'] = self.coin
+        garage_state.player_info['level'] = self.level
+        
+        self.ed = time.time()
+        if self.ed - self.st >= 1:
+            garage_state.save_data()
+            self.st = self.ed
         
 def handle_events():
     global road, player
@@ -253,17 +259,8 @@ def collision_check():
             for i in range(c.level):    #터트린 차량의 레벨에 비례한 코인 생성
                 coins.append(Coin(c.x + random.randint(-20, 20), c.y + random.randint(-20, 20))) 
             player.coin += c.level
-def load_data():
-    global player_data
-    with open('res/player_data.json', 'r') as fp:
-        player_data = json.load(fp)
-def save_data():
-    global player_data
-    with open('res/player_data.json', 'w') as fp:
-        json.dump(player_data, fp)
 def enter():
     global player, cars, coins, info, fires, player_data, bg
-    load_data()    
     fires = []
     info = Info()
     coins = []
@@ -275,7 +272,6 @@ def enter():
 
 def exit():
     global bg, player, cars, coins, fires, info
-    save_data()
     del player, bg, cars, coins, fires, info
 
 def draw():
