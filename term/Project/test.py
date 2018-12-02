@@ -1,5 +1,6 @@
 #import pico2d
 #import sys
+import time
 #
 #pico2d.open_canvas()
 #road = pico2d.load_image('res/road.png')
@@ -15,4 +16,11 @@
 #    #road.clip_draw(0, 0, 300, 300, 10, 10)
 #    pico2d.update_canvas()
 
-print(int(None))
+t = time.time()
+for _ in range(100000):
+    a = 10
+ela = time.time() - t
+
+a = 0.012
+b = 0.56
+print(b%a)

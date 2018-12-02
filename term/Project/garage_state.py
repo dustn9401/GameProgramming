@@ -5,17 +5,17 @@ import base
 import ui
 import json
 MAX_LEV = 5
-
+garage = None
 data = {}
 with open('res/player_data.json', 'r') as fp:
-        data = json.load(fp)
+    data = json.load(fp)
 player_info = data['player']
 car_info = data['car_info']
 def save_data():
     global data
-    data['player'] = player_info
-    data['car_info'] = car_info
     with open('res/player_data.json', 'w') as fp:
+        data['player'] = player_info
+        data['car_info'] = car_info
         json.dump(data, fp)
 def onClick(context):
     global garage, player_info

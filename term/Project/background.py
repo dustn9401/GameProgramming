@@ -36,23 +36,26 @@ class Road(base.BaseObject):
             Road.image = pico2d.load_image('res/img/road.png')
             print('Road', self.image)
         self.x = Road.image.w//2
-        self.y = 0
+        self.y = Road.image.h//2
+        self.y_lower = -ch
+        self.y_upper = ch
         self.dx = 0
     def draw(self):
-        Road.image.clip_draw_to_origin(int(self.x), int(self.y), cw, ch, 0, 0)
+#        Road.image.clip_draw_to_origin(int(self.x), int(self.y_lower), cw, ch, 0, 0)
+#        Road.image.clip_draw_to_origin(int(self.x), int(self.y), cw, ch, 0, 0)
+#        Road.image.clip_draw_to_origin(int(self.x), int(self.y_upper), cw, ch, 0, 0)
+        Road.image.draw(cw//2, self.y_lower, cw, ch)
+        Road.image.draw(cw//2, self.y, cw, ch)
+        Road.image.draw(cw//2, self.y_upper, cw, ch)
     def update(self):
         player = racing_state.player
-        cars = racing_state.cars
-        self.y += player.car.y_speed
-        if self.y > Road.image.h - ch: self.y = 0
-        if self.y < 0: self.y = ch//2
-        #self.x = pico2d.clamp(cw - Road.image.w//2, self.x + player.car.x_speed, Road.image.w//2)
-        tx = self.x
-        self.x = pico2d.clamp(0, self.x + player.dx, Road.image.w - cw)
-        self.dx = self.x - tx
-        
-        for c in cars:
-            c.x -= self.dx
+        self.y -= player.car.y_speed
+        if self.y_lower < -ch//2:
+            self.y += ch
+        if self.y_upper > ch//2:
+            self.y -= ch
+        self.y_lower = self.y - ch + 10
+        self.y_upper = self.y + ch - 10
         
 class Tree(base.BaseObject):
     image = None
@@ -66,10 +69,8 @@ class Tree(base.BaseObject):
         Tree.image.draw(self.x, self.y)
     def update(self):
         player = racing_state.player
-        road = racing_state.bg.road
         if self.x == None:
-            self.x = random.randint(-100-road.x, -road.x) if random.randint(0,1) else random.randint(Road.image.w - road.x - 200 - 50, Road.image.w - road.x - 200 + 50)
-        self.x -= road.dx
+            self.x = random.randint(0, 100) if random.randint(0,1) else random.randint(cw - 100, cw)
         self.y -= player.car.y_speed
         if self.y < 0: self.y += ch
         if self.y > ch: self.y -= ch
@@ -86,8 +87,6 @@ class Cloud(base.BaseObject):
         Cloud.image.draw(self.x, self.y)
     def update(self):
         player = racing_state.player
-        road = racing_state.bg.road
-        self.x -= 0.01 * road.dx
         self.y -= 0.1 * player.car.y_speed
         if self.y < 0: 
             self.y += ch
