@@ -4,7 +4,7 @@ import racing_state
 import base
 import ui
 import json
-MAX_LEV = 6
+MAX_LEV = 9
 garage = None
 data = {}
 with open('res/player_data.json', 'r') as fp:

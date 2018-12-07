@@ -54,8 +54,8 @@ class Road(base.BaseObject):
             self.y += ch
         if self.y_upper > ch//2:
             self.y -= ch
-        self.y_lower = self.y - ch + 10
-        self.y_upper = self.y + ch - 10
+        self.y_lower = self.y - ch
+        self.y_upper = self.y + ch
         
 class Tree(base.BaseObject):
     image = None

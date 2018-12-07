@@ -11,7 +11,7 @@ import ui
 #WIDTH, HEIGHT = pico2d.get_canvas_width(), pico2d.get_canvas_height() #window
 #size
 cw, ch = 800, 600
-MAX_LEV = 6     #max level
+MAX_LEV = 9     #max level
 MAX_INT_LENGTH = 10
 
 LEFT, RIGHT, UP, STOP, DEAD = range(5)    #car state
@@ -68,8 +68,11 @@ class Info(base.BaseObject):
     def update(self):
         global player
         self.lbl = [\
-            ui.Label('%d $' % player.coin, self.x + 20, self.y, 30, ui.FONT_2),\
-            ui.Label('시간: %.3f 초' % (time.time() - self.st), self.x + 20, self.y - 30, 30, ui.FONT_2),]
+            ui.Label('가진 돈: %d $' % player.coin, self.x + 20, self.y, 30, ui.FONT_2),\
+            ui.Label('속도: %.3f $' % player.car.y_speed, self.x + 20, self.y - 30, 30, ui.FONT_2),\
+            ui.Label('얻은 돈: %d $' % (player.coin - self.gamestart_coin), self.x + 20, self.y - 60, 30, ui.FONT_2),\
+            ui.Label('시간: %.3f 초' % (time.time() - self.gamestart_time), self.x + 20, self.y - 90, 30, ui.FONT_2),\
+            ]
             
         ui.labels = self.lbl
         ui.buttons = self.btn
@@ -331,9 +334,15 @@ class Player(base.BaseObject):
                 arctan = math.atan2(dy, dx)
                 self.bullets.append(Bullet(self.car.x, self.car.y, arctan))
 
-                if self.car.level == 5:
+                if self.car.level >= 3:
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan + 0.2))
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan - 0.2))
+                if self.car.level >= 5:
+                    self.bullets.append(Bullet(self.car.x, self.car.y, arctan + 0.4))
+                    self.bullets.append(Bullet(self.car.x, self.car.y, arctan - 0.4))
+                if self.car.level >= 7:
+                    self.bullets.append(Bullet(self.car.x, self.car.y, arctan + 0.6))
+                    self.bullets.append(Bullet(self.car.x, self.car.y, arctan - 0.6))
                 self.shoot_timer = 0
         else:
             self.car.x = self.car.y = -100
@@ -391,7 +400,7 @@ def handle_events():
             ui.handle_event(e)
 def draw_death(car):
     global fires
-    if car.level < 5:
+    if car.level < 5 or car.level == 7:
         fires.append(Death(car.x, car.y, car.level))
     else:
         fires.append(Explosion(car.x, car.y))
