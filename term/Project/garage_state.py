@@ -4,7 +4,7 @@ import racing_state
 import base
 import ui
 import json
-MAX_LEV = 5
+MAX_LEV = 6
 garage = None
 data = {}
 with open('res/player_data.json', 'r') as fp:
@@ -65,7 +65,7 @@ class Garage:
         if Garage.lock == None:
             Garage.lock = pico2d.load_image('res/img/lock.png')
         self.slot = [0, 1, 2]
-        self.slot_imgs = [pico2d.load_image('res/img/slot_lv%d.png'%(i+1)) for i in range(MAX_LEV)]
+        self.slot_imgs = [pico2d.load_image('res/img/slot_lv%d.png'%i) for i in range(MAX_LEV)]
         self.select = 0
         self.coin = Coin(380, 400)
         self.p_lev = player_info['level']
