@@ -120,6 +120,7 @@ class Info(base.BaseObject):
 #======================= 차 그리기 ======================
 class Car(base.BaseObject):
     images = [None for i in range(MAX_LEV)]
+    images_h = [None for i in range(MAX_LEV)]
     def __init__(self, level):
         self.x = random.randint(ROAD_L + 100, ROAD_R - 100)
         self.y = ch + 100
@@ -135,13 +136,23 @@ class Car(base.BaseObject):
         self.image = None
         if Car.images[self.level] == None:
             Car.images[self.level] = pico2d.load_image('res/img/lv_%d.png' % self.level)
+            Car.images_h[self.level] = pico2d.load_image('res/img/lv_%d_h.png'%self.level)
             print('image: car lv%d' % self.level)
         self.image = Car.images[self.level]
+        self.image_h = Car.images_h[self.level]
         self.WIDTH = self.image.w
         self.HEIGHT = self.image.h // self.max_frame
         self.st, self.ed = time.time(), 0
+
+        self.hit = False    #맞았을때 효과이미지 출력용
+        self.max_hp = garage_state.car_info[str(self.level)]['hp']
+        self.hp = self.max_hp
     def draw(self):
-        self.image.clip_draw(0, self.frame * (self.image.h // self.max_frame), self.image.w, self.image.h // self.max_frame, self.x, self.y)
+        if self.hit:
+            self.image_h.clip_draw(0, self.frame * (self.image.h // self.max_frame), self.image.w, self.image.h // self.max_frame, self.x, self.y)
+            self.hit = False
+        else:
+            self.image.clip_draw(0, self.frame * (self.image.h // self.max_frame), self.image.w, self.image.h // self.max_frame, self.x, self.y)
         #self.image.clip_composite_draw(0,
         #self.frame*(self.image.h//self.max_frame), self.image.w,
         #self.image.h//self.max_frame, 0, 'r', self.x, self.y, 100, 100)
@@ -180,6 +191,7 @@ class Car(base.BaseObject):
         self.y = 0 - 100 if random.randint(0,1) else cw + 100
         self.x_speed = 0
         self.y_speed = random.uniform(1.0, self.max_speed)
+        self.hp = self.max_hp
         
 class Explosion(base.BaseObject):
     image = None
@@ -410,13 +422,17 @@ def collision_check(player, cars, bullets):
         for i, b in enumerate(player.bullets):
             bRect = b.getRect()
             if checkRect(bRect, c.getRect()):
-                get = (c.level + 1) * 2
                 del player.bullets[i]
-                c.state = DEAD
-                draw_death(c)
-                for i in range(get):    #터트린 차량의 레벨에 비례한 코인 생성
-                    coins.append(Coin(c.x + random.randint(-40, 40), c.y + random.randint(-40, 40))) 
-                player.coin += get
+                if c.hp <= 1:
+                    get = (c.level + 1) * 2
+                    c.state = DEAD
+                    draw_death(c)
+                    for i in range(get):    #터트린 차량의 레벨에 비례한 코인 생성
+                        coins.append(Coin(c.x + random.randint(-40, 40), c.y + random.randint(-40, 40))) 
+                    player.coin += get
+                else:
+                    c.hp -= 1
+                    c.hit = True
             
 def enter():
     global player, cars, coins, info, fires, player_data, bg, start_time
