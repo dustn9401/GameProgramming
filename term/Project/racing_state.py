@@ -334,15 +334,18 @@ class Player(base.BaseObject):
                 arctan = math.atan2(dy, dx)
                 self.bullets.append(Bullet(self.car.x, self.car.y, arctan))
 
-                if self.car.level >= 3:
+                if self.car.level >= 2:
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan + 0.2))
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan - 0.2))
-                if self.car.level >= 5:
+                if self.car.level >= 4:
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan + 0.4))
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan - 0.4))
-                if self.car.level >= 7:
+                if self.car.level >= 6:
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan + 0.6))
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan - 0.6))
+                if self.car.level >= 8:
+                    self.bullets.append(Bullet(self.car.x, self.car.y, arctan + 0.8))
+                    self.bullets.append(Bullet(self.car.x, self.car.y, arctan - 0.8))
                 self.shoot_timer = 0
         else:
             self.car.x = self.car.y = -100
@@ -362,42 +365,40 @@ def handle_events():
         if e.type == pico2d.SDL_QUIT:
             garage_state.save_data()
             game_framework.quit()
-        if not player.gameover:
-            if e.type == pico2d.SDL_KEYDOWN:
-                if e.key == pico2d.SDLK_ESCAPE:
-                    garage_state.save_data()
-                    game_framework.pop_state()
-                elif e.key == pico2d.SDLK_a:
-                    player.car.dir -= 1
-                elif e.key == pico2d.SDLK_d:
-                    player.car.dir += 1
-                elif e.key == pico2d.SDLK_s:
-                    player.car.accel -= DELAY * 10 * math.log2(player.car.level + 2)
-    #                player.car.y_speed = -player.car.max_speed
-                elif e.key == pico2d.SDLK_w:
-                    player.car.accel += DELAY * 10 * math.log2(player.car.level + 2)
-    #                player.car.y_speed = player.car.max_speed
-            elif e.type == pico2d.SDL_KEYUP:
-                if e.key == pico2d.SDLK_a:
-                    player.car.dir += 1
-                elif e.key == pico2d.SDLK_d:
-                    player.car.dir -= 1
-                elif e.key == pico2d.SDLK_w:
-                    player.car.accel -= DELAY * 10 * math.log2(player.car.level + 2)
-    #                player.car.y_speed = 0
-                elif e.key == pico2d.SDLK_s:
-                    player.car.accel += DELAY * 10 * math.log2(player.car.level + 2)
-    #                player.car.y_speed = 0
-            elif e.type == pico2d.SDL_MOUSEMOTION:
-                mx, my = e.x, ch - e.y
-            elif e.type == pico2d.SDL_MOUSEBUTTONDOWN:
-                if e.button == pico2d.SDL_BUTTON_LEFT:
-                    player.shoot = True
-            elif e.type == pico2d.SDL_MOUSEBUTTONUP:
-                if e.button == pico2d.SDL_BUTTON_LEFT:
-                    player.shoot = False
-        else:
-            ui.handle_event(e)
+        elif e.type == pico2d.SDL_KEYDOWN and not player.gameover:
+            if e.key == pico2d.SDLK_ESCAPE:
+                garage_state.save_data()
+                game_framework.change_state(garage_state)
+            if e.key == pico2d.SDLK_a:
+                player.car.dir -= 1
+            elif e.key == pico2d.SDLK_d:
+                player.car.dir += 1
+            elif e.key == pico2d.SDLK_s:
+                player.car.accel -= DELAY * 10 * math.log2(player.car.level + 2)
+#                player.car.y_speed = -player.car.max_speed
+            elif e.key == pico2d.SDLK_w:
+                player.car.accel += DELAY * 10 * math.log2(player.car.level + 2)
+#                player.car.y_speed = player.car.max_speed
+        elif e.type == pico2d.SDL_KEYUP and not player.gameover:
+            if e.key == pico2d.SDLK_a:
+                player.car.dir += 1
+            elif e.key == pico2d.SDLK_d:
+                player.car.dir -= 1
+            elif e.key == pico2d.SDLK_w:
+                player.car.accel -= DELAY * 10 * math.log2(player.car.level + 2)
+#                player.car.y_speed = 0
+            elif e.key == pico2d.SDLK_s:
+                player.car.accel += DELAY * 10 * math.log2(player.car.level + 2)
+#                player.car.y_speed = 0
+        elif e.type == pico2d.SDL_MOUSEMOTION:
+            mx, my = e.x, ch - e.y
+        elif e.type == pico2d.SDL_MOUSEBUTTONDOWN:
+            if e.button == pico2d.SDL_BUTTON_LEFT and not player.gameover:
+                player.shoot = True
+        elif e.type == pico2d.SDL_MOUSEBUTTONUP:
+            if e.button == pico2d.SDL_BUTTON_LEFT and not player.gameover:
+                player.shoot = False
+
 def draw_death(car):
     global fires
     if car.level < 5 or car.level == 7:
