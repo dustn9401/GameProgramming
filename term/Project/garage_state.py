@@ -16,7 +16,7 @@ def save_data():
     with open('res/player_data.json', 'w') as fp:
         data['player'] = player_info
         data['car_info'] = car_info
-        json.dump(data, fp)
+        json.dump(data, fp, indent=2)
 def onClick(context):
     global garage, player_info
     if context == 'racestart':

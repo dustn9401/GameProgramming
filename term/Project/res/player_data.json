@@ -1,1 +1,111 @@
-{"player": {"coin": 5135253271652, "level": 13, "have": [0, 1, 4, 3, 3, 5, 2, 8, 7, 6, 6]}, "car_info": {"0": {"name": "\uc0ac\ub78c", "speed": 5, "frame": 8, "death_frame": 8, "cost": 0, "shoot_speed": 0.1, "hp": 1, "damage": 1}, "1": {"name": "\uac15\uc544\uc9c0", "speed": 6, "frame": 8, "death_frame": 7, "cost": 1000, "shoot_speed": 0.05, "hp": 3, "damage": 2}, "2": {"name": "\ud504\ub808\ub370\ud130", "speed": 7, "frame": 8, "death_frame": 7, "cost": 2000, "shoot_speed": 0.1, "hp": 5, "damage": 3}, "3": {"name": "\uadc0\uc2e0", "speed": 8, "frame": 8, "death_frame": 7, "cost": 4000, "shoot_speed": 0.05, "hp": 7, "damage": 4}, "4": {"name": "\uc5d0\uc77c\ub9ac\uc5b8", "speed": 9, "frame": 7, "death_frame": 12, "cost": 8000, "shoot_speed": 0.1, "hp": 9, "damage": 5}, "5": {"name": "\ud0f1\ud06c", "speed": 5, "frame": 1, "death_frame": 16, "cost": 16000, "shoot_speed": 0.05, "hp": 11, "damage": 6}, "6": {"name": "\uc2dc\uc988\ud0f1\ud06c", "speed": 7, "frame": 1, "death_frame": 16, "cost": 32000, "shoot_speed": 0.1, "hp": 13, "damage": 7}, "7": {"name": "\uad34\ubb3c", "speed": 9, "frame": 8, "death_frame": 10, "cost": 64000, "shoot_speed": 0.05, "hp": 15, "damage": 8}, "8": {"name": "\ud3ed\uaca9\uae30", "speed": 9, "frame": 1, "death_frame": 16, "cost": 128000, "shoot_speed": 0.1, "hp": 17, "damage": 9}}}
+{
+  "player": {
+    "coin": 5135253275704,
+    "level": 13,
+    "have": [
+      0,
+      1,
+      4,
+      3,
+      3,
+      5,
+      2,
+      8,
+      7,
+      6,
+      6
+    ]
+  },
+  "car_info": {
+    "0": {
+      "name": "\uc0ac\ub78c",
+      "speed": 5,
+      "frame": 8,
+      "death_frame": 8,
+      "cost": 0,
+      "shoot_speed": 0.1,
+      "hp": 1,
+      "damage": 1
+    },
+    "1": {
+      "name": "\uac15\uc544\uc9c0",
+      "speed": 6,
+      "frame": 8,
+      "death_frame": 7,
+      "cost": 1000,
+      "shoot_speed": 0.05,
+      "hp": 3,
+      "damage": 2
+    },
+    "2": {
+      "name": "\ud504\ub808\ub370\ud130",
+      "speed": 7,
+      "frame": 8,
+      "death_frame": 7,
+      "cost": 2000,
+      "shoot_speed": 0.1,
+      "hp": 5,
+      "damage": 3
+    },
+    "3": {
+      "name": "\uadc0\uc2e0",
+      "speed": 8,
+      "frame": 8,
+      "death_frame": 7,
+      "cost": 4000,
+      "shoot_speed": 0.05,
+      "hp": 7,
+      "damage": 4
+    },
+    "4": {
+      "name": "\uc5d0\uc77c\ub9ac\uc5b8",
+      "speed": 9,
+      "frame": 7,
+      "death_frame": 12,
+      "cost": 8000,
+      "shoot_speed": 0.1,
+      "hp": 9,
+      "damage": 5
+    },
+    "5": {
+      "name": "\ud0f1\ud06c",
+      "speed": 5,
+      "frame": 1,
+      "death_frame": 16,
+      "cost": 16000,
+      "shoot_speed": 0.05,
+      "hp": 11,
+      "damage": 6
+    },
+    "6": {
+      "name": "\uc2dc\uc988\ud0f1\ud06c",
+      "speed": 7,
+      "frame": 1,
+      "death_frame": 16,
+      "cost": 32000,
+      "shoot_speed": 0.1,
+      "hp": 13,
+      "damage": 7
+    },
+    "7": {
+      "name": "\uad34\ubb3c",
+      "speed": 9,
+      "frame": 8,
+      "death_frame": 10,
+      "cost": 64000,
+      "shoot_speed": 0.05,
+      "hp": 15,
+      "damage": 8
+    },
+    "8": {
+      "name": "\ud3ed\uaca9\uae30",
+      "speed": 9,
+      "frame": 1,
+      "death_frame": 16,
+      "cost": 128000,
+      "shoot_speed": 0.1,
+      "hp": 17,
+      "damage": 9
+    }
+  }
+}
