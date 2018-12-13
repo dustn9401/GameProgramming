@@ -10,7 +10,7 @@ class BaseObject:
     def update(self):
         raise NotImplementedError()
     def getRect(self):
-        return [[self.x - self.WIDTH//2, self.y - self.HEIGHT//2], [self.x + self.WIDTH//2, self.y + self.HEIGHT//2]]
+        return [[self.x - self.WIDTH//3, self.y - self.HEIGHT//3], [self.x + self.WIDTH//3, self.y + self.HEIGHT//3]]
     def drawRect(self):
         rect = self.getRect()
         pico2d.draw_rectangle(rect[0][0], rect[0][1], rect[1][0], rect[1][1])

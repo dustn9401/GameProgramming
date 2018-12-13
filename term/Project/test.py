@@ -1,6 +1,7 @@
-#import pico2d
+import pico2d
 #import sys
 import time
+
 #
 #pico2d.open_canvas()
 #road = pico2d.load_image('res/road.png')
@@ -16,11 +17,17 @@ import time
 #    #road.clip_draw(0, 0, 300, 300, 10, 10)
 #    pico2d.update_canvas()
 
-t = time.time()
-for _ in range(100000):
-    a = 10
-ela = time.time() - t
+#t = time.time()
+#for _ in range(100000):
+#    a = 10
+#ela = time.time() - t
 
-a = 0.012
-b = 0.56
-print(b%a)
+#a = 0.012
+#b = 0.56
+#print(b%a)
+
+pico2d.open_canvas()
+bgm = pico2d.load_music('res/sound/bgm.mp3')
+bgm.repeat_play()
+print(dir(bgm))
+input()

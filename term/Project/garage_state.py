@@ -6,11 +6,16 @@ import ui
 import json
 MAX_LEV = 9
 garage = None
+
 data = {}
 with open('res/player_data.json', 'r') as fp:
     data = json.load(fp)
 player_info = data['player']
 car_info = data['car_info']
+
+difficulty_str = ['매우적음', '적음', '보통', '많음', '매우많음', '극심한 정체']
+difficulty = range(6)
+
 def save_data():
     global data
     with open('res/player_data.json', 'w') as fp:
@@ -46,6 +51,10 @@ def onClick(context):
             garage.select = 1
         if context == 's3':
             garage.select = 2
+    if context == 'diff_up':
+        garage.difficulty = pico2d.clamp(0, garage.difficulty + 1, 5)
+    if context == 'diff_down':
+        garage.difficulty = pico2d.clamp(0, garage.difficulty - 1, 5)
 class Coin(base.BaseObject):
     image = None
     WIDTH, HEIGHT = 50, 50
@@ -67,7 +76,7 @@ class Garage:
         self.slot = [0, 1, 2]
         self.slot_imgs = [pico2d.load_image('res/img/slot_lv%d.png'%i) for i in range(MAX_LEV)]
         self.select = 0
-        self.coin = Coin(380, 400)
+        self.coin = Coin(330, 400)
         self.p_lev = player_info['level']
         self.msg = '탑승가능'
         self.able = True
@@ -81,15 +90,21 @@ class Garage:
                 ui.Button('res/img/slot', 200, 500, onClick, 's1'),\
                 ui.Button('res/img/slot', 400, 500, onClick, 's2'),\
                 ui.Button('res/img/slot', 600, 500, onClick, 's3'),\
+                ui.Button('res/img/left_arrow', 500, 250, onClick, 'diff_down'),\
+                ui.Button('res/img/right_arrow', 750, 250, onClick, 'diff_up'),\
                 ]
         self.lbl = []
+
+        self.difficulty = 0
     def update(self):
         self.lbl = [\
-                    ui.Label('가진 돈: %d'%player_info['coin'] + '$', 400, 400, 30, ui.FONT_3),\
-                    ui.Label('이름: ' + car_info[str(self.slot[self.select])]['name'], 400, 370, 30, ui.FONT_3),\
-                    ui.Label('최고속력: %d'%car_info[str(self.slot[self.select])]['speed'] + 'km/s', 400, 340, 30, ui.FONT_2),\
-                    ui.Label('가격: %d'%car_info[str(self.slot[self.select])]['cost'] + '$', 400, 310, 30, ui.FONT_2),\
-                    ui.Label(self.msg, 400, 280, 30, ui.FONT_2),\
+                    ui.Label('가진     : %d'%player_info['coin'] + '$', 250, 400, 30, ui.FONT_3),\
+                    ui.Label('이름: ' + car_info[str(self.slot[self.select])]['name'], 250, 370, 30, ui.FONT_3),\
+                    ui.Label('최고속력: %d'%car_info[str(self.slot[self.select])]['speed'] + 'km/s', 250, 340, 30, ui.FONT_2),\
+                    ui.Label('가격: %d'%car_info[str(self.slot[self.select])]['cost'] + '$', 250, 310, 30, ui.FONT_2),\
+                    ui.Label(self.msg, 250, 280, 30, ui.FONT_2),\
+                    ui.Label('통행량', 575, 300, 30, ui.FONT_2),\
+                    ui.Label(difficulty_str[self.difficulty], 575, 250, 20, ui.FONT_2),\
                     ]
         if self.slot[self.select] in player_info['have']:
             self.btn[0] = self.btn_start
@@ -121,7 +136,7 @@ class Garage:
             self.lock.draw(600, 500)
         
         img = self.slot_imgs[self.slot[self.select]]
-        img.clip_draw(0,0,img.w,img.h,200,300,200,200)
+        img.clip_draw(0,0,img.w,img.h,150,300,200,200)
             
 
 def handle_events():

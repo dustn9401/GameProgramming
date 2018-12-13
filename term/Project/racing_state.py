@@ -15,7 +15,7 @@ MAX_LEV = 9     #max level
 MAX_INT_LENGTH = 10
 
 LEFT, RIGHT, UP, STOP, DEAD = range(5)    #car state
-NUM_CAR = 30
+NUM_CAR = None
 NUM_TREE = 100
 ROAD_L, ROAD_R = 100, 700
 DELAY = 0.01      #draw 시 delay함수 호출, accel, dir 변수 함께 조정
@@ -25,6 +25,8 @@ player = None
 info = None
     
 def gameover():
+    bgm.stop()
+
     global info, player
     player.gameover = True
     player.car.y_speed = 0
@@ -35,6 +37,8 @@ def gameover():
     info.gameover_coin = player.coin
     gameover_state.earn_coin = info.gameover_coin - info.gamestart_coin
     gameover_state.live_time = info.gameover_time - info.gamestart_time
+
+    time.sleep(2)
     game_framework.change_state(gameover_state)
 
 # =============== 코인, 속도, 숫자 표시 관련 =====================
@@ -190,11 +194,13 @@ class Car(base.BaseObject):
             self.frame = (self.frame + 1) % self.max_frame
             self.st = self.ed
     def reset(self):
+        global player
+        self.level = random.randrange(0, player.car.level + 3 if player.car.level + 3 < MAX_LEV else MAX_LEV)
         self.x = random.randint(ROAD_L + 100, ROAD_R - 100)
         self.y = 0 - 100 if random.randint(0,1) else cw + 100
         self.x_speed = 0
-        self.y_speed = random.uniform(1.0, self.max_speed)
-        self.hp = self.max_hp
+        self.y_speed = random.uniform(1.0, garage_state.car_info[str(self.level)]['speed'])
+        self.hp = garage_state.car_info[str(self.level)]['hp']
         
 class Explosion(base.BaseObject):
     image = None
@@ -294,7 +300,9 @@ class Bullet(base.BaseObject):
     def update(self):
         self.x += self.xspeed
         self.y += self.yspeed
-        
+class Wave:
+    def __init__(self):
+        self.units = []
 class Player(base.BaseObject):
     endl = False
     def __init__(self):
@@ -424,8 +432,10 @@ def collision_check(player, cars, bullets):
                 for i in range(get):    #터트린 차량의 레벨에 비례한 코인 생성
                     coins.append(Coin(c.x + random.randint(-20, 20), c.y + random.randint(-20, 20))) 
                 player.coin += get
+                get_coin_bgm.play()
             else:
                 player.gameover = True
+                gameover_bgm.play()
                 draw_death(player.car)
         
         # =========== 총알과 적 차량 충돌체크 ============
@@ -440,6 +450,7 @@ def collision_check(player, cars, bullets):
                     for i in range(get):    #터트린 차량의 레벨에 비례한 코인 생성
                         coins.append(Coin(c.x + random.randint(-40, 40), c.y + random.randint(-40, 40))) 
                     player.coin += get
+                    get_coin_bgm.play()
                 else:
                     c.hp -= 1
                     c.hit = True
@@ -447,20 +458,33 @@ def collision_check(player, cars, bullets):
 def enter():
     global player, cars, coins, info, fires, player_data, bg, start_time
     player = Player()
+
     fires = []
     info = Info()
     coins = []
     cars = []
 
     lev = player.car.level
+
+    global NUM_CAR
+    NUM_CAR = (garage_state.garage.difficulty + 1) * 20
     for i in range(NUM_CAR):
         #내 차보다 최대 2레벨 높은것만 나오도록
         cars.append(Car(random.randrange(0, lev+3 if lev+3 < MAX_LEV else MAX_LEV)))
     bg = background.Background()
 
+    global bgm, gameover_bgm, get_coin_bgm
+    bgm = pico2d.load_music('res/sound/bgm.mp3')
+    gameover_bgm = pico2d.load_wav('res/sound/dead.wav')
+    get_coin_bgm = pico2d.load_wav('res/sound/coin.wav')
+    bgm.set_volume(64)
+    gameover_bgm.set_volume(64)
+    get_coin_bgm.set_volume(64)
+    bgm.repeat_play()
+
 def exit():
-    global bg, player, cars, coins, fires, info
-    del player, bg, cars, coins, fires, info
+    global bg, player, cars, coins, fires, info, bgm, gameover_bgm, get_coin_bgm
+    del player, bg, cars, coins, fires, info, bgm, gameover_bgm, get_coin_bgm
 
 def draw():
     global bg, player, cars, coins, fires
