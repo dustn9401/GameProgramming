@@ -23,7 +23,7 @@ mx, my = 0, 0
 cars = None
 player = None
 info = None
-    
+wave_lev = 1
 def gameover():
     bgm.stop()
 
@@ -66,16 +66,19 @@ class Info(base.BaseObject):
         self.elapsed_total = 0
         self.elapsed = 0
         self.gameover_timer = 0
+
+        self.current_game_time = 0
     def draw(self):
         ui.draw()
         self.coin.draw()
     def update(self):
         global player
+        self.current_game_time = time.time() - self.gamestart_time
         self.lbl = [\
             ui.Label('가진 돈: %d $' % player.coin, self.x + 20, self.y, 30, ui.FONT_2),\
             ui.Label('속도: %.3f $' % player.car.y_speed, self.x + 20, self.y - 30, 30, ui.FONT_2),\
             ui.Label('얻은 돈: %d $' % (player.coin - self.gamestart_coin), self.x + 20, self.y - 60, 30, ui.FONT_2),\
-            ui.Label('시간: %.3f 초' % (time.time() - self.gamestart_time), self.x + 20, self.y - 90, 30, ui.FONT_2),\
+            ui.Label('시간: %.3f 초' % self.current_game_time, self.x + 20, self.y - 90, 30, ui.FONT_2),\
             ]
             
         ui.labels = self.lbl
@@ -173,11 +176,12 @@ class Car(base.BaseObject):
         self.x_speed = 200 * DELAY * self.dir * math.log2(self.level + 2)
         self.x = pico2d.clamp(100, self.x + self.x_speed, cw - 100)
         
-        self.y_speed = pico2d.clamp(-self.max_speed, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
+        #self.y_speed = pico2d.clamp(-self.max_speed, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
+        self.y_speed = pico2d.clamp(0, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
         self.y -= (player.car.y_speed - self.y_speed)
         
-        if self.y < -100 or self.y > cw + 200:
-            self.reset()
+        #if self.y < -100 or self.y > cw + 200:
+        #    self.reset()
 
         # ============= 상태 업데이트 ==============
         if self.y_speed == 0:
@@ -300,9 +304,7 @@ class Bullet(base.BaseObject):
     def update(self):
         self.x += self.xspeed
         self.y += self.yspeed
-class Wave:
-    def __init__(self):
-        self.units = []
+
 class Player(base.BaseObject):
     endl = False
     def __init__(self):
@@ -382,6 +384,7 @@ def handle_events():
             elif e.key == pico2d.SDLK_d:
                 player.car.dir += 1
             elif e.key == pico2d.SDLK_s:
+                pass
                 player.car.accel -= DELAY * 10 * math.log2(player.car.level + 2)
 #                player.car.y_speed = -player.car.max_speed
             elif e.key == pico2d.SDLK_w:
@@ -454,7 +457,22 @@ def collision_check(player, cars, bullets):
                 else:
                     c.hp -= 1
                     c.hit = True
-            
+#class Wave:
+#    def __init__(self):
+#        global player
+#        self.level = pico2d.clamp(player.car.level, player.car.level + 3, MAX_LEV - 1)
+#        self.wave_level = 1
+#        self.units = [Car(self.level) for _ in range(self.wave_level*20)]
+#        for i, u in enumerate(self.units):
+def wave(level):
+    global cars
+    wave_cars = [Car(pico2d.clamp(player.car.level, player.car.level + 3, MAX_LEV - 1))]
+    w = cw/len(wave_cars)
+    wave_cars[0].x = 0
+    for i in range(1, len(wave_cars)):
+        wave_cars[i].x = wave_cars[i-1].x + w
+        wave_cars[i].y_speed = -1
+    cars += wave_cars
 def enter():
     global player, cars, coins, info, fires, player_data, bg, start_time
     player = Player()
@@ -504,13 +522,21 @@ def draw():
     pico2d.delay(DELAY)
 
 def update():
-    global bg, player, cars, coins, fires, info
+    global bg, player, cars, coins, fires, info, wave_lev
     bg.update()   #도로 업데이트
-    for c in cars:
+
+    if int(info.current_game_time) % 60 == 0:
+        wave(wave_lev)
+        wave_lev += 1
+    for i, c in enumerate(cars):
         c.update()          #상대 차들 업데이트
         if random.randint(0, 100) == 0:
-#            pass
             c.dir = random.randint(-1, 1)
+        if c.y < -100 or c.y > cw + 200:
+            if len(cars) > NUM_CAR: 
+                del cars[i]
+            else:
+                c.reset()
             
     for i,f in enumerate(fires):
         f.update()
