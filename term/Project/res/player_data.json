@@ -1,6 +1,6 @@
 {
   "player": {
-    "coin": 3644,
+    "coin": 15394,
     "level": 21,
     "have": [
       0,
@@ -95,13 +95,13 @@
     },
     "8": {
       "cost": 12800,
-      "damage": 17,
+      "speed": 17,
       "death_frame": 16,
       "frame": 1,
       "hp": 17,
       "name": "\ud3ed\uaca9\uae30",
       "shoot_speed": 0.05,
-      "speed": 9
+      "damage": 17
     }
   }
 }

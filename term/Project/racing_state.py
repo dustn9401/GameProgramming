@@ -19,7 +19,7 @@ LEFT, RIGHT, UP, STOP, DEAD = range(5)    #car state
 NUM_CAR = None
 NUM_TREE = 100
 ROAD_L, ROAD_R = 100, 700
-DELAY = 0.01      #draw 시 delay함수 호출, accel, dir 변수 함께 조정
+DELAY = 0.01
 mx, my = 0, 0
 
 cars = None
@@ -27,7 +27,8 @@ player = None
 info = None
 wave_lev = 1
 is_over = False
-lock = False
+lock = threading.Lock()
+delete_objs = []
 
 def gameover():
     bgm.stop()
@@ -87,7 +88,7 @@ class Info(base.BaseObject):
 
         self.lbl = [\
             ui.Label('가진 돈: %d $' % player.coin, self.x + 20, self.y, 30, ui.FONT_2),\
-            ui.Label('속도: %.3f km/h' % player.car.y_speed*5, self.x + 20, self.y - 30, 30, ui.FONT_2),\
+            ui.Label('속도: %.3f km/h'%(player.car.y_speed*5), self.x + 20, self.y - 30, 30, ui.FONT_2),\
             ui.Label('얻은 돈: %d $' % (player.coin - self.gamestart_coin), self.x + 20, self.y - 60, 30, ui.FONT_2),\
             ui.Label('시간: %.3f 초' % self.current_game_time, self.x + 20, self.y - 90, 30, ui.FONT_2),\
             ]
@@ -155,9 +156,10 @@ class Car(base.BaseObject):
         self.level = level
         self.max_speed = garage_state.car_info[str(self.level)]['speed']
         self.y_speed = random.uniform(1.0, self.max_speed)
-        self.x_speed = 200 * DELAY * math.log2(self.level + 1)
+        self.x_speed = 100 * DELAY * math.log2(self.level + 1)
         self.state = STOP
         self.frame = 0
+        self.frame_time = 0
         self.max_frame = garage_state.car_info[str(self.level)]['frame']
         self.image = None
         if Car.images[self.level] == None:
@@ -168,7 +170,6 @@ class Car(base.BaseObject):
         self.image_h = Car.images_h[self.level]
         self.WIDTH = self.image.w
         self.HEIGHT = self.image.h // self.max_frame
-        self.st, self.ed = time.time(), 0
 
         self.hit = False    #맞았을때 효과이미지 출력용
         self.max_hp = garage_state.car_info[str(self.level)]['hp']
@@ -179,35 +180,22 @@ class Car(base.BaseObject):
             self.hit = False
         else:
             self.image.clip_draw(0, self.frame * (self.image.h // self.max_frame), self.image.w, self.image.h // self.max_frame, self.x, self.y)
-        #self.image.clip_composite_draw(0,
-        #self.frame*(self.image.h//self.max_frame), self.image.w,
-        #self.image.h//self.max_frame, 0, 'r', self.x, self.y, 100, 100)
-        self.drawRect()
+        #self.drawRect()
     def update(self):
-        global player, bg
+        global player, bg, info
         # ============= 좌표 업데이트 ==============
-            
-        self.x_speed = 200 * DELAY * self.dir * math.log2(self.level + 2)
-        self.x = pico2d.clamp(100, self.x + self.x_speed, cw - 100)
-        
-        #self.y_speed = pico2d.clamp(-self.max_speed, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
-        self.y_speed = pico2d.clamp(0, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
-        self.y -= (player.car.y_speed - self.y_speed)
+        self.frame_time += info.elapsed
 
-        # ============= 상태 업데이트 ==============
-        if self.y_speed == 0:
-            self.state = STOP
-        elif self.dir == 1:
-            self.state = RIGHT
-        elif self.dir == -1:
-            self.state = LEFT
-        else:
-            self.state = UP
-
-        self.ed = time.time()
-        if self.ed - self.st > 0.05:
+        if self.frame_time > DELAY:
+            self.frame_time = 0
             self.frame = (self.frame + 1) % self.max_frame
-            self.st = self.ed
+            self.x_speed = 200 * DELAY * self.dir * math.log2(self.level + 2)
+            self.x = pico2d.clamp(100, self.x + self.x_speed, cw - 100)
+        
+            #self.y_speed = pico2d.clamp(-self.max_speed, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
+            self.y_speed = pico2d.clamp(0, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
+            self.y -= (player.car.y_speed - self.y_speed)
+
         
 class Explosion(base.BaseObject):
     image = None
@@ -413,61 +401,65 @@ def handle_events():
             if e.button == pico2d.SDL_BUTTON_LEFT and not player.gameover:
                 player.shoot = False
 
-def draw_death(car):
+def draw_death(x, y, level):
     global fires
-    if car.level < 5 or car.level == 7:
-        fires.append(Death(car.x, car.y, car.level))
+    if level < 5 or level == 7:
+        fires.append(Death(x, y, level))
     else:
-        fires.append(Explosion(car.x, car.y))
+        fires.append(Explosion(x, y))
         
 def checkRect(r1, r2):
     if r1[0][0] > r2[1][0] or r1[0][1] > r2[1][1] or r1[1][0] < r2[0][0] or r1[1][1] < r2[0][1]:
         return False
     return True
-def collision_check():
-    global coins, fires, end_time, earn_coin, is_over, player, cars, bullets, lock
+def collides_car():
+    global coins, fires, end_time, earn_coin, is_over, player, cars, bullets, delete_objs, lock
     while not is_over:
-        
         pRect = player.car.getRect()
-        lock = True
-        for idx, c in enumerate(cars):
-        
-            # ============ 플레이어와 적 차량 충돌체크 ==============
-            if checkRect(pRect, c.getRect()):
-                if player.car.level > c.level:
-                    get = (c.level + 1) * 2
-                    draw_death(c)
-                    del cars[idx]
-                    for i in range(get):    #터트린 차량의 레벨에 비례한 코인 생성
-                        coins.append(Coin(c.x + random.randint(-20, 20), c.y + random.randint(-20, 20))) 
-                    player.coin += get
-                    get_coin_bgm.play()
-                else:
-                    is_over = True
-                    gameover_bgm.play()
-                    draw_death(player.car)
-        
-            # =========== 총알과 적 차량 충돌체크 ============
-            for i, b in enumerate(player.bullets):
-                bRect = b.getRect()
-                if checkRect(bRect, c.getRect()):
-                    del player.bullets[i]
-                    if c.hp <= 1:
+        with lock:
+            for idx, c in enumerate(cars):
+                # ============ 플레이어와 적 차량 충돌체크 ==============
+                if checkRect(pRect, c.getRect()):
+                    if player.car.level >= c.level:
                         get = (c.level + 1) * 2
-                        draw_death(c)
-                        del cars[idx]
+                        draw_death(c.x, c.y, c.level)
+                        if len(cars) > idx: del cars[idx]
+                        #delete_objs.append(idx)
                         for i in range(get):    #터트린 차량의 레벨에 비례한 코인 생성
-                            coins.append(Coin(c.x + random.randint(-40, 40), c.y + random.randint(-40, 40))) 
+                            coins.append(Coin(c.x + random.randint(-20, 20), c.y + random.randint(-20, 20))) 
                         player.coin += get
                         get_coin_bgm.play()
                     else:
-                        c.hp -= 1
-                        c.hit = True
-        lock = False
-        pico2d.delay(DELAY*2)
+                        is_over = True
+                        player.gameover = True
+                        gameover_bgm.play()
+                        draw_death(player.car.x, player.car.y, player.car.level)
+        time.sleep(DELAY)
+def collides_bullet():
+                # =========== 총알과 적 차량 충돌체크 ============
+    global coins, fires, end_time, earn_coin, is_over, player, cars, bullets, delete_objs, lock
+    while not is_over:
+        with lock:
+            for idx, c in enumerate(cars):
+                for i, b in enumerate(player.bullets):
+                    bRect = b.getRect()
+                    if checkRect(bRect, c.getRect()):
+                        del player.bullets[i]
+                        if c.hp <= 1:
+                            get = (c.level + 1) * 2
+                            draw_death(c.x, c.y, c.level)
+                            if len(cars) > idx: del cars[idx]
+                            for i in range(get):    #터트린 차량의 레벨에 비례한 코인 생성
+                                coins.append(Coin(c.x + random.randint(-40, 40), c.y + random.randint(-40, 40))) 
+                            player.coin += get
+                            get_coin_bgm.play()
+                        else:
+                            c.hp -= 1
+                            c.hit = True
+        time.sleep(DELAY)
 
 def wave(level):
-    global cars
+    global cars, lock
     print('wave level: ', level)
     wave_cars = [Car(pico2d.clamp(player.car.level, player.car.level + 3, MAX_LEV - 1)) for _ in range(level*10)]
     w = (cw-200)/len(wave_cars)
@@ -477,7 +469,8 @@ def wave(level):
         wave_cars[i].x = wave_cars[i-1].x + w
         wave_cars[i].y_speed = 5
         wave_cars[i].y = ch + 50
-    cars += wave_cars
+    with lock:
+        cars += wave_cars
 def enter():
     global player, cars, coins, info, fires, player_data, bg, start_time, wav_lev, collision_check_thread, is_over
     player = Player()
@@ -507,8 +500,10 @@ def enter():
 
     wav_lev = 1
     is_over = False
-    collision_check_thread = threading.Thread(target = collision_check)
-    collision_check_thread.start()
+    collision_check1 = threading.Thread(target = collides_car)
+    collision_check1.start()
+    collision_check2 = threading.Thread(target = collides_bullet)
+    collision_check2.start()
 
 def exit():
     global bg, player, cars, coins, fires, info, bgm, gameover_bgm, get_coin_bgm
@@ -518,8 +513,9 @@ def draw():
     global bg, player, cars, coins, fires
     pico2d.clear_canvas()
     bg.draw()
-    for c in cars:
-        c.draw()
+    with lock:
+        for c in cars:
+            c.draw()
     for c in coins:
         c.draw()
     for f in fires:
@@ -533,23 +529,18 @@ def draw():
 cur, bef = 0, 0
 def update():
     global bg, player, cars, coins, fires, info, wave_lev
-    global cur, bef, is_over
-
+    global cur, bef, is_over, delete_objs, lock
 
     bg.update()   #도로 업데이트
-
-    for i, c in enumerate(cars):
-        c.update()          #상대 차들 업데이트
-        if random.randint(0, 100) == 0:
-            c.dir = random.randint(-1, 1)
-        if c.y < -100 or c.y > ch + 200 and not lock:
-            lock = True
-            if len(cars) > NUM_CAR:
+    with lock:
+        for i, c in enumerate(cars):
+            c.update()          #상대 차들 업데이트
+            if random.randint(0, 100) == 0:
+                c.dir = random.randint(-1, 1)
+            if c.y < -100 or c.y > ch + 200:
                 del cars[i]
-            if len(cars) < NUM_CAR:
-                cars.append(Car(random.randrange(0, player.car.level+3 if player.car.level+3 < MAX_LEV else MAX_LEV)))
-            lock = False
-            
+    while len(cars) < NUM_CAR:
+        cars.append(Car(random.randrange(0, player.car.level+3 if player.car.level+3 < MAX_LEV else MAX_LEV)))
     for i,f in enumerate(fires):
         f.update()
         if f.end: del fires[i]
@@ -575,7 +566,7 @@ def update():
             gameover()
     #else:
     #    collision_check()
-    pico2d.delay(DELAY)
+    #pico2d.delay(DELAY)
 
 
 def pause():

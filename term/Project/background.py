@@ -60,7 +60,7 @@ class Road(base.BaseObject):
 class Tree(base.BaseObject):
     image = None
     def __init__(self):
-        self.x = None
+        self.x = 0
         self.y = random.randint(0, ch)
         if Tree.image == None:
             Tree.image = pico2d.load_image('res/img/tree.png')
@@ -69,7 +69,7 @@ class Tree(base.BaseObject):
         Tree.image.draw(self.x, self.y)
     def update(self):
         player = racing_state.player
-        if self.x == None:
+        if self.x == 0:
             self.x = random.randint(0, 100) if random.randint(0,1) else random.randint(cw - 100, cw)
         self.y -= player.car.y_speed
         if self.y < 0: self.y += ch
