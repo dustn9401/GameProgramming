@@ -56,14 +56,7 @@ class Info(base.BaseObject):
         self.btn = []
         self.lbl = []
         self.st = time.time()
-        
-        self.nano = 0
-        self.counter_1ms = 0
-        self.counter_10ms = 0
-        self.counter_100ms = 0
-        self.counter_s = 0
-        self.counter_m = 0
-        
+
         self.gamestart_time = time.time()
         self.gameover_time = 0
         self.gamestart_coin = player.coin
@@ -93,10 +86,10 @@ class Info(base.BaseObject):
             ui.Label('시간: %.3f 초' % self.current_game_time, self.x + 20, self.y - 90, 30, ui.FONT_2),\
             ]
         if self.waving:
-            self.temp_label_timer = 5
+            self.temp_label_timer = 3
             self.waving = False
         if self.temp_label_timer > 0:
-            warning = ui.Label('교통량이 급증하고있습니다!!', 300, 500, 30, ui.FONT_3)
+            warning = ui.Label('통행량이 급증하고있습니다!!', 300, 500, 30, ui.FONT_3)
             warning.color = (255,0,0)
             self.lbl = [*self.lbl, warning]
             self.temp_label_timer -= self.elapsed
@@ -108,58 +101,24 @@ class Info(base.BaseObject):
         self.coin.x, self.coin.y = self.x, self.y
         
         
-        cnt = self.elapsed % 0.1
-        self.counter_100ms+=cnt
-        self.elapsed -= 0.1 * cnt
-        cnt = self.elapsed % 0.01
-        self.counter_10ms+=cnt
-        self.elapsed -= 0.01 * cnt
-        cnt = self.elapsed % 0.001
-        self.counter_1ms+=cnt
-        self.elapsed -= 0.001 * cnt
-        self.nano += self.elapsed
-        
-        if self.nano > 0.001:
-            self.counter_1ms += self.nano // 0.001
-            self.nano %= 0.001
-        
-        if self.counter_1ms >= 10:  #10ms 마다 할일
-            self.counter_10ms += self.counter_1ms // 10
-            self.counter_1ms %= 10
-            
-        if self.counter_10ms >= 10:     #100ms 마다 할일
-            self.counter_100ms += self.counter_10ms // 10
-            self.counter_10ms %= 10                
-                
-        if self.counter_100ms >= 10:    #1s 마다 할일
-            self.counter_s += self.counter_100ms // 10
-            self.counter_100ms %= 10
-            
-        if self.counter_s >= 60:
-            self.counter_s %= 60
-            self.counter_m += 1
-            
-        if self.counter_s % 10 == 0:
-            pass
-            
-
-        
 #======================= 차 그리기 ======================
 class Car(base.BaseObject):
     images = [None for i in range(MAX_LEV)]
     images_h = [None for i in range(MAX_LEV)]
     def __init__(self, level):
         self.x = random.randint(ROAD_L + 100, ROAD_R - 100)
-        self.y = ch + 100
+        self.y = random.randint(-100, 0) if random.randint(0,1) else random.randint(600, ch+100)
         self.accel = 0
         self.dir = 0
         self.level = level
         self.max_speed = garage_state.car_info[str(self.level)]['speed']
         self.y_speed = random.uniform(1.0, self.max_speed)
-        self.x_speed = 100 * DELAY * math.log2(self.level + 1)
+        self.x_speed = 0
         self.state = STOP
         self.frame = 0
-        self.frame_time = 0
+        self.frame_timer = 0
+        self.draw_timer = 0
+        self.draw_interval = 0.05
         self.max_frame = garage_state.car_info[str(self.level)]['frame']
         self.image = None
         if Car.images[self.level] == None:
@@ -184,17 +143,19 @@ class Car(base.BaseObject):
     def update(self):
         global player, bg, info
         # ============= 좌표 업데이트 ==============
-        self.frame_time += info.elapsed
-
-        if self.frame_time > DELAY:
-            self.frame_time = 0
+        self.frame_timer += info.elapsed
+        self.draw_timer += info.elapsed
+        if self.draw_timer > self.draw_interval:
+            self.draw_timer = 0
             self.frame = (self.frame + 1) % self.max_frame
-            self.x_speed = 200 * DELAY * self.dir * math.log2(self.level + 2)
-            self.x = pico2d.clamp(100, self.x + self.x_speed, cw - 100)
+        if self.frame_timer > DELAY:
+            self.frame_timer = 0
         
             #self.y_speed = pico2d.clamp(-self.max_speed, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
-            self.y_speed = pico2d.clamp(0, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
-            self.y -= (player.car.y_speed - self.y_speed)
+            self.y_speed = pico2d.clamp(-self.max_speed, self.y_speed + self.accel, self.max_speed)      #속도 += 가속도
+            self.y += (self.y_speed - player.car.y_speed)
+            self.x_speed = self.dir * self.max_speed/2
+            self.x = pico2d.clamp(100, self.x + self.x_speed, cw - 100)
 
         
 class Explosion(base.BaseObject):
@@ -324,12 +285,13 @@ class Player(base.BaseObject):
         
         self.st = self.ed        
 
-        if not self.gameover:
+        if not is_over:
             self.car.update()
-
+            self.car.y_speed = max(0, self.car.y_speed)
         # ============ 총알발사 ============
             self.shoot_timer += info.elapsed
             if self.shoot and self.shoot_timer > self.shoot_speed:
+                self.shoot_timer = 0
                 dx = mx - self.car.x
                 dy = my - self.car.y
                 arctan = math.atan2(dy, dx)
@@ -347,7 +309,6 @@ class Player(base.BaseObject):
                 if self.car.level >= 8:
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan + 0.8))
                     self.bullets.append(Bullet(self.car.x, self.car.y, arctan - 0.8))
-                self.shoot_timer = 0
         else:
             self.car.x = self.car.y = -100
             self.car.y_speed = self.car.x_speed = 0
@@ -375,7 +336,6 @@ def handle_events():
             elif e.key == pico2d.SDLK_d:
                 player.car.dir += 1
             elif e.key == pico2d.SDLK_s:
-                pass
                 player.car.accel -= DELAY * 10 * math.log2(player.car.level + 2)
 #                player.car.y_speed = -player.car.max_speed
             elif e.key == pico2d.SDLK_w:
@@ -461,14 +421,22 @@ def collides_bullet():
 def wave(level):
     global cars, lock
     print('wave level: ', level)
-    wave_cars = [Car(pico2d.clamp(player.car.level, player.car.level + 3, MAX_LEV - 1)) for _ in range(level*10)]
-    w = (cw-200)/len(wave_cars)
-    wave_cars[0].y = ch
-    wave_cars[0].x = 0
-    for i in range(1, len(wave_cars)):
-        wave_cars[i].x = wave_cars[i-1].x + w
-        wave_cars[i].y_speed = 5
-        wave_cars[i].y = ch + 50
+
+    wave_cars = []
+    
+    w = (cw-200)/15
+    for i in range(level):
+        new_cars = [Car(pico2d.clamp(0, i, MAX_LEV - 1)) for _ in range(15)]
+        for j in range(len(new_cars)):
+            if j==0:
+                new_cars[j].y = ch+((i+1)*30)
+                new_cars[j].x = 100
+            else:
+                new_cars[j].x = new_cars[j-1].x + w
+                new_cars[j].y = new_cars[j-1].y
+            new_cars[j].y_speed = -1
+        wave_cars += new_cars
+
     with lock:
         cars += wave_cars
 def enter():
@@ -529,15 +497,16 @@ def draw():
 cur, bef = 0, 0
 def update():
     global bg, player, cars, coins, fires, info, wave_lev
-    global cur, bef, is_over, delete_objs, lock
+    global cur, bef, is_over, lock
 
     bg.update()   #도로 업데이트
+
     with lock:
         for i, c in enumerate(cars):
             c.update()          #상대 차들 업데이트
             if random.randint(0, 100) == 0:
                 c.dir = random.randint(-1, 1)
-            if c.y < -100 or c.y > ch + 200:
+            if c.y < -200 or c.y > ch + 200:
                 del cars[i]
     while len(cars) < NUM_CAR:
         cars.append(Car(random.randrange(0, player.car.level+3 if player.car.level+3 < MAX_LEV else MAX_LEV)))
@@ -559,6 +528,13 @@ def update():
             bef = cur
             wave(wave_lev)
             wave_lev += 1
+    #if cur > 5 and cur % 10 == 5:
+    #    info.waving = True
+    #if cur > 5 and cur % 10 == 0:
+    #    if cur != bef:
+    #        bef = cur
+    #        wave(wave_lev)
+    #        wave_lev += 1
 
     if is_over:   #1초후 종료
         info.gameover_timer += info.elapsed

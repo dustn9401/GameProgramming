@@ -1,21 +1,16 @@
 {
   "player": {
-    "coin": 15394,
-    "level": 21,
+    "coin": 386,
+    "level": 2,
     "have": [
       0,
-      2,
-      4,
-      5,
-      6,
-      7,
-      8
+      2
     ]
   },
   "car_info": {
     "0": {
       "name": "\uc0ac\ub78c",
-      "speed": 5,
+      "speed": 3,
       "frame": 8,
       "death_frame": 8,
       "cost": 0,
@@ -25,7 +20,7 @@
     },
     "1": {
       "name": "\uac15\uc544\uc9c0",
-      "speed": 6,
+      "speed": 4,
       "frame": 8,
       "death_frame": 7,
       "cost": 100,
@@ -35,7 +30,7 @@
     },
     "2": {
       "name": "\ud504\ub808\ub370\ud130",
-      "speed": 8,
+      "speed": 5,
       "frame": 8,
       "death_frame": 7,
       "cost": 200,
@@ -45,7 +40,7 @@
     },
     "3": {
       "name": "\uadc0\uc2e0",
-      "speed": 9,
+      "speed": 6,
       "frame": 8,
       "death_frame": 7,
       "cost": 400,
@@ -55,7 +50,7 @@
     },
     "4": {
       "name": "\uc5d0\uc77c\ub9ac\uc5b8",
-      "speed": 11,
+      "speed": 7,
       "frame": 7,
       "death_frame": 12,
       "cost": 800,
@@ -65,7 +60,7 @@
     },
     "5": {
       "name": "\ud0f1\ud06c",
-      "speed": 12,
+      "speed": 8,
       "frame": 1,
       "death_frame": 16,
       "cost": 1600,
@@ -75,7 +70,7 @@
     },
     "6": {
       "name": "\uc2dc\uc988\ud0f1\ud06c",
-      "speed": 14,
+      "speed": 9,
       "frame": 1,
       "death_frame": 16,
       "cost": 3200,
@@ -85,7 +80,7 @@
     },
     "7": {
       "name": "\uad34\ubb3c",
-      "speed": 15,
+      "speed": 10,
       "frame": 8,
       "death_frame": 10,
       "cost": 6400,
@@ -95,7 +90,7 @@
     },
     "8": {
       "cost": 12800,
-      "speed": 17,
+      "speed": 11,
       "death_frame": 16,
       "frame": 1,
       "hp": 17,
