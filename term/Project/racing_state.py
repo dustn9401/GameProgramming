@@ -27,13 +27,14 @@ player = None
 info = None
 wave_lev = 1
 is_over = False
-lock = threading.Lock()
 delete_objs = []
+lock = threading.Lock()
 
 def gameover():
     bgm.stop()
 
-    global info, player
+    global info, player, wave_lev
+    wave_lev = 1
     player.gameover = True
     player.car.y_speed = 0
     player.car.x_speed = 0
@@ -380,8 +381,8 @@ def collides_car():
             for idx, c in enumerate(cars):
                 # ============ 플레이어와 적 차량 충돌체크 ==============
                 if checkRect(pRect, c.getRect()):
-                    if player.car.level > c.level:
-                        get = (c.level + 1) * 2
+                    if player.car.level >= c.level:
+                        get = (c.level + 1) * (garage_state.garage.difficulty + 1)
                         draw_death(c.x, c.y, c.level)
                         if len(cars) > idx: del cars[idx]
                         #delete_objs.append(idx)
@@ -406,7 +407,7 @@ def collides_bullet():
                     if checkRect(bRect, c.getRect()):
                         del player.bullets[i]
                         if c.hp <= 1:
-                            get = (c.level + 1) * 2
+                            get = (c.level + 1) * (garage_state.garage.difficulty + 1)
                             draw_death(c.x, c.y, c.level)
                             if len(cars) > idx: del cars[idx]
                             for i in range(get):    #터트린 차량의 레벨에 비례한 코인 생성
@@ -501,13 +502,15 @@ def update():
 
     bg.update()   #도로 업데이트
 
-    with lock:
+    if lock.acquire(blocking=False):
         for i, c in enumerate(cars):
             c.update()          #상대 차들 업데이트
             if random.randint(0, 100) == 0:
                 c.dir = random.randint(-1, 1)
             if c.y < -200 or c.y > ch + 800:
                 del cars[i]
+        lock.release()
+
     while len(cars) < NUM_CAR:
         cars.append(Car(random.randrange(0, player.car.level+2 if player.car.level+2 < MAX_LEV else MAX_LEV)))
     for i,f in enumerate(fires):
@@ -521,20 +524,13 @@ def update():
     player.update()
 
     cur = int(info.current_game_time)
-    if cur > 1 and cur % 20 == 15:
-        info.waving = True
-    if cur > 1 and cur % 20 == 0:
-        if cur != bef:
-            bef = cur
-            wave(wave_lev)
-            wave_lev += 1
-    #if cur > 5 and cur % 10 == 5:
-    #    info.waving = True
-    #if cur > 5 and cur % 10 == 0:
-    #    if cur != bef:
-    #        bef = cur
-    #        wave(wave_lev)
-    #        wave_lev += 1
+    if cur != bef:
+        bef = cur
+        if cur > 1 and cur % 20 == 15:
+            info.waving = True
+        if cur > 1 and cur % 20 == 0:
+                wave(wave_lev)
+                wave_lev += 1
 
     if is_over:   #1초후 종료
         info.gameover_timer += info.elapsed

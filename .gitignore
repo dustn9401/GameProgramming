@@ -13,3 +13,5 @@ venv.bak/
 .pyproj
 __pycache__/
 .vs/
+/term/Project/build/main
+/term/Project/dist

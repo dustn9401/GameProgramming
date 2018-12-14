@@ -105,6 +105,7 @@ class Garage:
                     ui.Label(self.msg, 250, 280, 30, ui.FONT_2),\
                     ui.Label('통행량', 575, 300, 30, ui.FONT_2),\
                     ui.Label(difficulty_str[self.difficulty], 575, 250, 20, ui.FONT_2),\
+                    ui.Label('코인획득량: X %.1f'%(self.difficulty+1), 575, 200, 20, ui.FONT_2),\
                     ]
         if self.slot[self.select] in player_info['have']:
             self.btn[0] = self.btn_start

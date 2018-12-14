@@ -1,14 +1,13 @@
 {
   "player": {
-    "coin": 106024,
-    "level": 7,
+    "coin": 83697,
+    "level": 6,
     "have": [
       0,
+      1,
+      1,
       2,
       4,
-      5,
-      6,
-      7,
       8
     ]
   },
@@ -28,7 +27,7 @@
       "speed": 4,
       "frame": 8,
       "death_frame": 7,
-      "cost": 100,
+      "cost": 200,
       "shoot_speed": 0.1,
       "hp": 1,
       "damage": 2
@@ -38,8 +37,8 @@
       "speed": 5,
       "frame": 8,
       "death_frame": 7,
-      "cost": 200,
-      "shoot_speed": 0.2,
+      "cost": 600,
+      "shoot_speed": 0.15,
       "hp": 2,
       "damage": 3
     },
@@ -48,7 +47,7 @@
       "speed": 6,
       "frame": 8,
       "death_frame": 7,
-      "cost": 400,
+      "cost": 2400,
       "shoot_speed": 0.1,
       "hp": 2,
       "damage": 4
@@ -58,8 +57,8 @@
       "speed": 7,
       "frame": 7,
       "death_frame": 12,
-      "cost": 800,
-      "shoot_speed": 0.2,
+      "cost": 4000,
+      "shoot_speed": 0.15,
       "hp": 3,
       "damage": 5
     },
@@ -68,7 +67,7 @@
       "speed": 8,
       "frame": 1,
       "death_frame": 16,
-      "cost": 1600,
+      "cost": 6800,
       "shoot_speed": 0.1,
       "hp": 3,
       "damage": 6
@@ -78,8 +77,8 @@
       "speed": 9,
       "frame": 1,
       "death_frame": 16,
-      "cost": 3200,
-      "shoot_speed": 0.2,
+      "cost": 12800,
+      "shoot_speed": 0.15,
       "hp": 4,
       "damage": 7
     },
@@ -88,13 +87,13 @@
       "speed": 10,
       "frame": 8,
       "death_frame": 10,
-      "cost": 6400,
+      "cost": 16000,
       "shoot_speed": 0.1,
       "hp": 4,
       "damage": 8
     },
     "8": {
-      "cost": 12800,
+      "cost": 32000,
       "speed": 11,
       "death_frame": 16,
       "frame": 1,
