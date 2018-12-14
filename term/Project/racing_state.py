@@ -89,7 +89,7 @@ class Info(base.BaseObject):
             self.temp_label_timer = 3
             self.waving = False
         if self.temp_label_timer > 0:
-            warning = ui.Label('통행량이 급증하고있습니다!!', 300, 500, 30, ui.FONT_3)
+            warning = ui.Label('통행량이 급증하고있습니다!!', 200, 500, 30, ui.FONT_3)
             warning.color = (255,0,0)
             self.lbl = [*self.lbl, warning]
             self.temp_label_timer -= self.elapsed
@@ -424,9 +424,9 @@ def wave(level):
 
     wave_cars = []
     
-    w = (cw-200)/15
+    w = (cw-200)/20
     for i in range(level):
-        new_cars = [Car(pico2d.clamp(0, i, MAX_LEV - 1)) for _ in range(15)]
+        new_cars = [Car(pico2d.clamp(0, i, MAX_LEV - 1)) for _ in range(20)]
         for j in range(len(new_cars)):
             if j==0:
                 new_cars[j].y = ch+((i+1)*30)
@@ -454,7 +454,7 @@ def enter():
     NUM_CAR = (garage_state.garage.difficulty + 1) * 20
     for i in range(NUM_CAR):
         #내 차보다 최대 2레벨 높은것만 나오도록
-        cars.append(Car(random.randrange(0, lev+3 if lev+3 < MAX_LEV else MAX_LEV)))
+        cars.append(Car(random.randrange(0, lev+2 if lev+2 < MAX_LEV else MAX_LEV)))
     bg = background.Background()
 
     global bgm, gameover_bgm, get_coin_bgm
@@ -509,7 +509,7 @@ def update():
             if c.y < -200 or c.y > ch + 200:
                 del cars[i]
     while len(cars) < NUM_CAR:
-        cars.append(Car(random.randrange(0, player.car.level+3 if player.car.level+3 < MAX_LEV else MAX_LEV)))
+        cars.append(Car(random.randrange(0, player.car.level+2 if player.car.level+2 < MAX_LEV else MAX_LEV)))
     for i,f in enumerate(fires):
         f.update()
         if f.end: del fires[i]

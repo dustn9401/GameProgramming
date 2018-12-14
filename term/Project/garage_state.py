@@ -100,7 +100,7 @@ class Garage:
         self.lbl = [\
                     ui.Label('가진     : %d'%player_info['coin'] + '$', 250, 400, 30, ui.FONT_3),\
                     ui.Label('이름: ' + car_info[str(self.slot[self.select])]['name'], 250, 370, 30, ui.FONT_3),\
-                    ui.Label('최고속력: %d'%car_info[str(self.slot[self.select])]['speed'] + 'km/s', 250, 340, 30, ui.FONT_2),\
+                    ui.Label('최고속력: %d'%(car_info[str(self.slot[self.select])]['speed']*5) + 'km/s', 250, 340, 30, ui.FONT_2),\
                     ui.Label('가격: %d'%car_info[str(self.slot[self.select])]['cost'] + '$', 250, 310, 30, ui.FONT_2),\
                     ui.Label(self.msg, 250, 280, 30, ui.FONT_2),\
                     ui.Label('통행량', 575, 300, 30, ui.FONT_2),\

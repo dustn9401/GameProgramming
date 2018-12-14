@@ -1,10 +1,13 @@
 {
   "player": {
-    "coin": 476,
-    "level": 2,
+    "coin": 1598,
+    "level": 5,
     "have": [
       0,
-      2
+      2,
+      4,
+      5,
+      6
     ]
   },
   "car_info": {
