@@ -1,13 +1,15 @@
 {
   "player": {
-    "coin": 1598,
-    "level": 5,
+    "coin": 106024,
+    "level": 7,
     "have": [
       0,
       2,
       4,
       5,
-      6
+      6,
+      7,
+      8
     ]
   },
   "car_info": {
@@ -17,7 +19,7 @@
       "frame": 8,
       "death_frame": 8,
       "cost": 0,
-      "shoot_speed": 0.1,
+      "shoot_speed": 0.2,
       "hp": 1,
       "damage": 1
     },
@@ -27,8 +29,8 @@
       "frame": 8,
       "death_frame": 7,
       "cost": 100,
-      "shoot_speed": 0.05,
-      "hp": 3,
+      "shoot_speed": 0.1,
+      "hp": 1,
       "damage": 2
     },
     "2": {
@@ -37,8 +39,8 @@
       "frame": 8,
       "death_frame": 7,
       "cost": 200,
-      "shoot_speed": 0.1,
-      "hp": 5,
+      "shoot_speed": 0.2,
+      "hp": 2,
       "damage": 3
     },
     "3": {
@@ -47,8 +49,8 @@
       "frame": 8,
       "death_frame": 7,
       "cost": 400,
-      "shoot_speed": 0.05,
-      "hp": 7,
+      "shoot_speed": 0.1,
+      "hp": 2,
       "damage": 4
     },
     "4": {
@@ -57,8 +59,8 @@
       "frame": 7,
       "death_frame": 12,
       "cost": 800,
-      "shoot_speed": 0.1,
-      "hp": 9,
+      "shoot_speed": 0.2,
+      "hp": 3,
       "damage": 5
     },
     "5": {
@@ -67,8 +69,8 @@
       "frame": 1,
       "death_frame": 16,
       "cost": 1600,
-      "shoot_speed": 0.05,
-      "hp": 11,
+      "shoot_speed": 0.1,
+      "hp": 3,
       "damage": 6
     },
     "6": {
@@ -77,8 +79,8 @@
       "frame": 1,
       "death_frame": 16,
       "cost": 3200,
-      "shoot_speed": 0.1,
-      "hp": 13,
+      "shoot_speed": 0.2,
+      "hp": 4,
       "damage": 7
     },
     "7": {
@@ -87,8 +89,8 @@
       "frame": 8,
       "death_frame": 10,
       "cost": 6400,
-      "shoot_speed": 0.05,
-      "hp": 15,
+      "shoot_speed": 0.1,
+      "hp": 4,
       "damage": 8
     },
     "8": {
@@ -96,9 +98,9 @@
       "speed": 11,
       "death_frame": 16,
       "frame": 1,
-      "hp": 17,
+      "hp": 5,
       "name": "\ud3ed\uaca9\uae30",
-      "shoot_speed": 0.05,
+      "shoot_speed": 0.1,
       "damage": 17
     }
   }

@@ -380,7 +380,7 @@ def collides_car():
             for idx, c in enumerate(cars):
                 # ============ 플레이어와 적 차량 충돌체크 ==============
                 if checkRect(pRect, c.getRect()):
-                    if player.car.level >= c.level:
+                    if player.car.level > c.level:
                         get = (c.level + 1) * 2
                         draw_death(c.x, c.y, c.level)
                         if len(cars) > idx: del cars[idx]
@@ -506,7 +506,7 @@ def update():
             c.update()          #상대 차들 업데이트
             if random.randint(0, 100) == 0:
                 c.dir = random.randint(-1, 1)
-            if c.y < -200 or c.y > ch + 200:
+            if c.y < -200 or c.y > ch + 800:
                 del cars[i]
     while len(cars) < NUM_CAR:
         cars.append(Car(random.randrange(0, player.car.level+2 if player.car.level+2 < MAX_LEV else MAX_LEV)))
@@ -521,9 +521,9 @@ def update():
     player.update()
 
     cur = int(info.current_game_time)
-    if cur > 10 and cur % 20 == 15:
+    if cur > 1 and cur % 20 == 15:
         info.waving = True
-    if cur > 10 and cur % 20 == 0:
+    if cur > 1 and cur % 20 == 0:
         if cur != bef:
             bef = cur
             wave(wave_lev)
